@@ -44,7 +44,7 @@ func startSender() {
 	fmt.Println("Dialing connection")
 
 	for _, member := range membershipList {
-		connection, err := net.DialUDP("udp", fmt.Sprintf("%s:%d", member, SERVER_PORT))
+		connection, err := net.Dial("udp", fmt.Sprintf("%s:%d", member, SERVER_PORT))
 
 		if err != nil {
 			log.Fatalf("Couldn't connect to server: %s", err.Error())
