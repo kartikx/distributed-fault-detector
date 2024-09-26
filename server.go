@@ -46,6 +46,7 @@ func startListener() {
 			for _, subMessage := range messages {
 				switch subMessage.Kind {
 				case JOIN:
+					fmt.Println("Case: JOIN")
 					// TODO this will differ depending on whether you are introducer or not.
 					// How do i handle multiple messages?
 					responseEnc, _ = ProcessJoinMessage(subMessage.Data, addr)
