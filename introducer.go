@@ -72,11 +72,13 @@ func InitializeMembershipInfo(members []string, introducer_conn *net.Conn, local
 		ip := GetIPFromID(id)
 
 		if ip == INTRODUCER_SERVER_HOST {
+			// TODO this should be indexed thread-safe.
 			membershipInfo[id] = MemberInfo{
 				connection: introducer_conn,
 				host:       id,
 				failed:     false,
 			}
+			membershipList = append(membershipList, id)
 		} else if ip == localIP {
 			nodeId = id
 		} else {
@@ -92,6 +94,8 @@ func InitializeMembershipInfo(members []string, introducer_conn *net.Conn, local
 				host:       id,
 				failed:     false,
 			}
+
+			membershipList = append(membershipList, id)
 		}
 	}
 
