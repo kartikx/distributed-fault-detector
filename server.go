@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 )
 
 // TODO requestPort should be an identifier
@@ -82,7 +84,6 @@ func startListener() {
 	}
 
 	for {
-		fmt.Printf("Waiting for a message\n")
 		buf := make([]byte, 1024)
 		mlen, address, err := server.ReadFromUDP(buf)
 
@@ -90,22 +91,24 @@ func startListener() {
 			log.Fatalf("Error accepting: %s", err.Error())
 		}
 
-		fmt.Printf("Raw: %b String: %s\n", buf, buf)
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
 		var response Message
-		fmt.Println("Unmarshalled: ", message)
+
 		switch message.Kind {
-		case "JOIN":
-			response.Kind = "JOIN"
+		case JOIN:
+			response.Kind = JOIN
 			response.Data = "JOIN RESPONSE"
-		case "PING":
-			response.Kind = "PING"
-			response.Data = "ACK"
+		case PING:
+			response.Kind = ACK
+			response.Data = ""
+			// Adding a random sleep to simulate failures.
+			var sleepTime time.Duration = time.Duration(rand.Intn(4)) * time.Second
+			fmt.Println("PING from: ", address, " Sleep for: ", sleepTime)
+			time.Sleep(sleepTime)
 		}
 
 		responseEnc, _ := json.Marshal(response)
-		fmt.Printf("Wrote: [%s] to [%s]\n", responseEnc, address)
 		server.WriteToUDP(responseEnc, address)
 	}
 }

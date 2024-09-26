@@ -15,6 +15,7 @@ var membershipList = []string{}
 func main() {
 	num := os.Args[1]
 
+	// TODO this should be populated via introduction.
 	switch num {
 	case "0":
 		membershipList = append(membershipList, "fa24-cs425-6402.cs.illinois.edu", "fa24-cs425-6403.cs.illinois.edu")

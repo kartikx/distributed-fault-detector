@@ -2,11 +2,12 @@ package main
 
 import "net"
 
-// const (
-// 	JOIN  MessageType = 0
-// 	LEAVE MessageType = 1
-// 	PING  MessageType = 2
-// )
+const (
+	PING  MessageType = 0
+	JOIN  MessageType = 1
+	LEAVE MessageType = 2
+	ACK   MessageType = 3
+)
 
 type MemberInfo struct {
 	connection net.Conn
@@ -14,9 +15,12 @@ type MemberInfo struct {
 	port       string
 }
 
-// type MessageType int32
+type MessageType int32
 
 type Message struct {
-	Kind string
+	Kind MessageType
+	// This might be a JSON encoded string, and should be decoded based on Kind.
 	Data string
 }
+
+type Messages []Message
