@@ -5,7 +5,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"time"
 )
@@ -66,14 +65,9 @@ func startSender() {
 	for {
 		// TODO Make this asynchronous using a goroutine.
 		for _, member := range membershipList {
-			// TODO this should be dialed already based on introduce method.
-			connection, err := net.Dial("udp", fmt.Sprintf("%s:%d", member, SERVER_PORT))
+			// TODO error check?
+			connection := membershipInfo[member].connection
 
-			if err != nil {
-				log.Fatalf("Couldn't connect to server: %s", err.Error())
-			}
-
-			// TODO check piggybacks array here, and include messages.
 			fmt.Println("PING ", member)
 
 			var messages Messages
