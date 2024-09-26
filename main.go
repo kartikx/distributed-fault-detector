@@ -62,7 +62,9 @@ func main() {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
-	fmt.Println(membershipInfo)
+	for k, _ := range membershipInfo {
+		fmt.Printf("Node Id: %s", k)
+	}
 
 	// Now process your membershiplist into membershipinfo
 
