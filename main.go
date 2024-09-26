@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
@@ -55,17 +56,22 @@ func main() {
 	// Dial connection.
 	// go startSender()
 
-	// var b []byte = make([]byte, 1)
+	var b []byte = make([]byte, 1)
 
-	// for {
-	// 	os.Stdin.Read(b)
+	go func() {
+		for {
+			os.Stdin.Read(b)
 
-	// 	switch b[0] {
-	// 	case 'm':
-	// 		PrintMembershipList()
-	// 		PrintMembershipInfo()
-	// 	case 'p':
-	// 		PrintPiggybackMessages()
-	// 	}
-	// }
+			switch b[0] {
+			case 'm':
+				PrintMembershipList()
+				PrintMembershipInfo()
+			case 'p':
+				PrintPiggybackMessages()
+			}
+		}
+	}()
+
+	ch := make(chan int)
+	<-ch
 }
