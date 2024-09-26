@@ -49,12 +49,12 @@ func startListener() {
 					fmt.Println("Case: JOIN")
 					// TODO this will differ depending on whether you are introducer or not.
 					// How do i handle multiple messages?
-					responseEnc, err = ProcessJoinMessage(subMessage.Data, addr)
+					responseEnc, err = ProcessJoinMessage(subMessage.Data, address)
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
 				case PING:
-					responseEnc, _ = ProcessPingMessage(subMessage.Data, addr)
+					responseEnc, _ = ProcessPingMessage(subMessage.Data, address)
 				default:
 					log.Fatalf("Unexpected message kind")
 				}
