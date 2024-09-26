@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -48,13 +47,8 @@ func main() {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
-	fmt.Println("Printing membership info table")
-	for nodeId := range membershipInfo {
-		fmt.Printf("Node Id: %s\n", nodeId)
-	}
-
 	// Dial connection.
-	// go startSender()
+	go startSender()
 
 	var b []byte = make([]byte, 1)
 

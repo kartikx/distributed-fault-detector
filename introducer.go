@@ -114,21 +114,12 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 
 	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
 
-	membershipList = append(membershipList, nodeId)
+	AddNewMemberToMembershipList(nodeId)
 
 	// For the response, add yourself to the list as well.
 	membershipListResponse := append(membershipList, NODE_ID)
 
-	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
-	if err != nil {
-		return Message{}, err
-	}
-
-	membershipInfo[nodeId] = MemberInfo{
-		connection: &conn,
-		host:       ipAddr,
-		failed:     false,
-	}
+	AddNewMemberToMembershipInfo(nodeId)
 
 	membershipListEnc, err := json.Marshal(membershipListResponse)
 	if err != nil {

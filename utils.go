@@ -118,3 +118,27 @@ func PrintPiggybackMessages() {
 		fmt.Println(p)
 	}
 }
+
+func AddNewMemberToMembershipList(nodeId string) error {
+	// TODO Thread Safety
+	membershipList = append(membershipList, nodeId)
+	return nil
+}
+
+func AddNewMemberToMembershipInfo(nodeId string) error {
+	ipAddr := GetIPFromID(nodeId)
+
+	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
+	if err != nil {
+		return err
+	}
+
+	// TODO Thread Safety
+	membershipInfo[nodeId] = MemberInfo{
+		connection: &conn,
+		host:       ipAddr,
+		failed:     false,
+	}
+
+	return nil
+}

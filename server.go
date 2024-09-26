@@ -53,15 +53,16 @@ func startListener() {
 				switch subMessage.Kind {
 				case JOIN:
 					fmt.Println("submessage JOIN")
-					responseMessage, err = ProcessJoinMessage(subMessage.Data, address)
+					responseMessage, err = ProcessJoinMessage(subMessage, address)
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
 				case LEAVE:
+					log.Fatalf("Unsupported")
 				case HELLO:
+					ProcessHelloMessage(subMessage)
 				case FAIL:
-					// PING shouldn't have another PING within it?
-					// responseEnc, _ = ProcessPingMessage(subMessage.Data, address)
+					log.Fatalf("Unsupported")
 				default:
 					log.Fatalf("Unexpected message kind")
 				}
@@ -89,9 +90,9 @@ func startListener() {
 
 // request contains the encoded Data of the JOIN message.
 // addr is the address of the host that sent this PING.
-func ProcessJoinMessage(request string, addr *net.UDPAddr) (Message, error) {
+func ProcessJoinMessage(message Message, addr *net.UDPAddr) (Message, error) {
 	if isIntroducer {
-		joinResponse, err := IntroduceNodeToGroup(request, addr)
+		joinResponse, err := IntroduceNodeToGroup(message.Data, addr)
 		return joinResponse, err
 	} else {
 		// You should simply add this node to your list, if it does not exist already,
@@ -109,4 +110,31 @@ func getPingResponse([]byte, error) string {
 	responseEnc, _ := json.Marshal(response)
 
 	return string(responseEnc)
+}
+
+func ProcessHelloMessage(message Message) error {
+	fmt.Println("Processing Hello Message: ", message)
+
+	// For the hello message, nodeId is expected to be the node Id.
+	nodeId := message.Data
+
+	if _, ok := membershipInfo[nodeId]; ok {
+		fmt.Printf("Node %s already exists in membership info, Skipping \n", nodeId)
+		return nil
+	}
+
+	// Add to membership list if not added already.
+	err := AddNewMemberToMembershipList(nodeId)
+	if err != nil {
+		return err
+	}
+
+	err = AddNewMemberToMembershipInfo(nodeId)
+	if err != nil {
+		return err
+	}
+
+	AddToPiggybacks(message, len(membershipList))
+
+	return nil
 }

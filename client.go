@@ -3,7 +3,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -22,21 +21,24 @@ func startSender() {
 			var messages Messages
 
 			for _, piggyback := range piggybacks {
+				// TODO check TTL of message.
 				messages = append(messages, piggyback.message)
 			}
 
-			messagesEnc, _ := json.Marshal(messages)
+			pingMessageEnc, err := GetEncodedPingMessage(messages)
 
-			message := Message{Kind: PING, Data: string(messagesEnc)}
-			messageEnc, _ := json.Marshal(message)
+			if err != nil {
+				fmt.Println("Unable to encode ping message")
+				continue
+			}
 
-			connection.Write(messageEnc)
+			connection.Write(pingMessageEnc)
 
 			buffer := make([]byte, 1024)
 
 			// TODO would this work would even if I were to re-use the connection?
 			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_SECONDS * time.Second))
-			_, err := connection.Read(buffer)
+			_, err = connection.Read(buffer)
 
 			if err != nil {
 				fmt.Println("Add failed message for: ", member)
@@ -53,7 +55,7 @@ func startSender() {
 				continue
 			}
 
-			// No need to read ACK. Empty response is good enough.
+			// TODO Ack might have important information, process it.
 
 			fmt.Println("ACK: ", member)
 
