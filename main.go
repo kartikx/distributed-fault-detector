@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-var membershipInfo map[string]MemberInfo
+var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
 
 // Stores the identifiers, gets shuffled and round-robinned for pings.
 var membershipList = []string{}
