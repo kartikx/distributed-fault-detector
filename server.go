@@ -69,7 +69,7 @@ func startListener() {
 			}
 
 			// Adding a random sleep to simulate failures.
-			// TODO @sdevata Implement rand with upgrading go version.
+			// TODO @sriram Implement rand with upgrading go version.
 			// var sleepTime time.Duration = time.Duration(rand.Intn(10)) * time.Second
 
 			// if sleepTime > 5*time.Second {
