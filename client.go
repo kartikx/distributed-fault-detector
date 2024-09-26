@@ -66,7 +66,7 @@ func startSender() {
 		// TODO Make this asynchronous using a goroutine.
 		for _, member := range membershipList {
 			// TODO error check?
-			connection := membershipInfo[member].connection
+			connection := *membershipInfo[member].connection
 
 			fmt.Println("PING ", member)
 
