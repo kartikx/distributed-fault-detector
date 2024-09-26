@@ -64,6 +64,7 @@ func startListener() {
 			log.Fatalf("Unexpected message kind")
 		}
 
+		fmt.Println("Writing: ", responseEnc)
 		server.WriteToUDP(responseEnc, address)
 	}
 }
