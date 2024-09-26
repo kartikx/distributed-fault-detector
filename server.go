@@ -87,8 +87,9 @@ func startListener() {
 			continue
 		}
 
+		fmt.Println(ackResponse)
 		// fmt.Println("Writing Response: ", string(ackResponse))
-		server.WriteToUDP(ackResponse, address)
+		// server.WriteToUDP(ackResponse, address)
 	}
 }
 

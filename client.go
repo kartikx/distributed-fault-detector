@@ -55,12 +55,12 @@ func startSender() {
 				fmt.Println("Add failed message for: ", nodeId)
 
 				// Start propagating FAIL message.
-				failedMessage := Message{
-					Kind: FAIL,
-					Data: nodeId,
-				}
+				// failedMessage := Message{
+				// 	Kind: FAIL,
+				// 	Data: nodeId,
+				// }
 
-				AddToPiggybacks(failedMessage, 1)
+				// AddToPiggybacks(failedMessage, 1)
 
 				continue
 			} else {
