@@ -10,7 +10,7 @@ import (
 
 // TODO implement.
 func introduce() ([]string, *net.Conn, error) {
-	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST)
+	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST))
 	if err != nil {
 		return nil, nil, err
 	}
