@@ -12,9 +12,9 @@ var piggybacks PiggybackMessages
 func startSender() {
 	for {
 		// TODO Make this asynchronous using a goroutine.
-		for _, member := range membershipList {
+		for _, nodeId := range membershipList {
 			// TODO error check?
-			connection := *membershipInfo[member].connection
+			connection := *membershipInfo[nodeId].connection
 
 			if connection == nil {
 				// Perhaps connection is still being made. Sleep for some time.
@@ -36,7 +36,7 @@ func startSender() {
 				continue
 			}
 
-			fmt.Printf("PING %s [%s]\n", member, pingMessageEnc)
+			fmt.Printf("PING %s [%s]\n", nodeId, pingMessageEnc)
 
 			connection.Write(pingMessageEnc)
 
@@ -47,26 +47,24 @@ func startSender() {
 			_, err = connection.Read(buffer)
 
 			if err != nil {
-				fmt.Println("Add failed message for: ", member)
+				fmt.Println("Add failed message for: ", nodeId)
 
 				// Start propagating FAIL message.
-				// failedMessage := Message{
-				// 	Kind: FAIL,
-				// 	Data: member,
-				// }
+				failedMessage := Message{
+					Kind: FAIL,
+					Data: nodeId,
+				}
 
-				// TODO create helper method that appends to piggyback in a thread-safe way.
-				// piggybacks = append(piggybacks, PiggbackMessage{message: failedMessage, ttl: 1})
+				AddToPiggybacks(failedMessage, 1)
 
 				continue
+			} else {
+				// TODO Ack might have important information, process it.
+				fmt.Println("ACK: ", nodeId)
+
+				// TODO should I close this?
+				// defer connection.Close()
 			}
-
-			// TODO Ack might have important information, process it.
-
-			fmt.Println("ACK: ", member)
-
-			// TODO should I close this?
-			// defer connection.Close()
 
 			time.Sleep(PING_INTERVAL * time.Second)
 		}

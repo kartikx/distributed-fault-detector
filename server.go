@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
+
+	"golang.org/x/exp/rand"
 )
 
 func startListener() {
@@ -69,9 +72,13 @@ func startListener() {
 			}
 
 			// Adding a random sleep to simulate failures.
-			// var sleepTime time.Duration = time.Duration(rand.Intn(4)) * time.Second
-			// fmt.Println("PING from: ", address, " Sleep for: ", sleepTime)
-			// time.Sleep(sleepTime)
+			var sleepTime time.Duration = time.Duration(rand.Intn(10)) * time.Second
+
+			if sleepTime > 5*time.Second {
+				fmt.Println("SIMULATING FAILURE")
+			}
+
+			time.Sleep(sleepTime)
 		default:
 			log.Fatalf("Unexpected message kind")
 		}
@@ -83,7 +90,7 @@ func startListener() {
 			continue
 		}
 
-		fmt.Println("Writing Response: ", string(ackResponse))
+		// fmt.Println("Writing Response: ", string(ackResponse))
 		server.WriteToUDP(ackResponse, address)
 	}
 }
