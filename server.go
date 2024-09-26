@@ -87,7 +87,8 @@ func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
 
 	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
 
-	membershipList = append(membershipList, nodeId)
+	// Add new node as well as yourself to the list.
+	membershipList = append(membershipList, nodeId, NODE_ID)
 
 	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
 	if err != nil {
