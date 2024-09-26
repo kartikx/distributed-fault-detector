@@ -16,8 +16,6 @@ func startSender() {
 			// TODO error check?
 			connection := *membershipInfo[member].connection
 
-			fmt.Println("PING ", member)
-
 			var messages Messages
 
 			for _, piggyback := range piggybacks {
@@ -32,6 +30,8 @@ func startSender() {
 				continue
 			}
 
+			fmt.Printf("PING %s [%s]", member, pingMessageEnc)
+
 			connection.Write(pingMessageEnc)
 
 			buffer := make([]byte, 1024)
@@ -44,13 +44,13 @@ func startSender() {
 				fmt.Println("Add failed message for: ", member)
 
 				// Start propagating FAIL message.
-				failedMessage := Message{
-					Kind: FAIL,
-					Data: member,
-				}
+				// failedMessage := Message{
+				// 	Kind: FAIL,
+				// 	Data: member,
+				// }
 
 				// TODO create helper method that appends to piggyback in a thread-safe way.
-				piggybacks = append(piggybacks, PiggbackMessage{message: failedMessage, ttl: 1})
+				// piggybacks = append(piggybacks, PiggbackMessage{message: failedMessage, ttl: 1})
 
 				continue
 			}
