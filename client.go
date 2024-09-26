@@ -87,7 +87,7 @@ func startSender() {
 
 			// TODO would this work would even if I were to re-use the connection?
 			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_SECONDS * time.Second))
-			_, err = connection.Read(buffer)
+			_, err := connection.Read(buffer)
 
 			if err != nil {
 				fmt.Println("Add failed message for: ", member)
