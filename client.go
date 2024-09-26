@@ -19,6 +19,7 @@ func startSender() {
 			if connection == nil {
 				// Perhaps connection is still being made. Sleep for some time.
 				time.Sleep(2 * time.Second)
+				continue
 			}
 
 			var messages Messages
