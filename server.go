@@ -1,3 +1,5 @@
+// Stores functionality for responding to messages.
+
 package main
 
 import (
@@ -6,11 +8,6 @@ import (
 	"log"
 	"net"
 )
-
-// func sendJoinMessage(info MemberInfo, nodeId string) {
-// 	// TODO implement.
-// 	fmt.Println("Sending join to", info.port)
-// }
 
 func startListener() {
 	addr := &net.UDPAddr{
@@ -74,48 +71,62 @@ func startListener() {
 }
 
 func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
-	// TODO Add a check here for whether you are the introducer or not.
+	if isIntroducer {
+		// TODO Add corner case checking, what if the introducer gets a looped around message from
+		// the past? It should check that the node doesn't already exist.
 
-	// TODO Add corner case checking, what if the introducer gets a looped around message from
-	// the past? It should check that the node doesn't already exist.
+		fmt.Println("Join message body: ", request)
 
-	fmt.Println("Join message body: ", request)
+		ipAddr := addr.IP.String()
+		nodeId := ConstructNodeID(ipAddr)
 
-	// TODO get ip address, construct node id, get existing member list, construct response body.
-	ipAddr := addr.IP.String()
-	nodeId := ConstructNodeID(ipAddr)
+		fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
 
-	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
+		membershipList = append(membershipList, nodeId)
 
-	// Add new node as well as yourself to the list.
-	membershipList = append(membershipList, nodeId, NODE_ID)
+		// For the response, add yourself to the list as well.
+		membershipListResponse := append(membershipList, NODE_ID)
 
-	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
-	if err != nil {
-		return nil, err
+		conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
+		if err != nil {
+			return nil, err
+		}
+
+		membershipInfo[nodeId] = MemberInfo{
+			connection: &conn,
+			host:       ipAddr,
+			failed:     false,
+		}
+
+		// Informing other nodes to add this node to their lists via piggybacks.
+		joinPiggybackMessage := Message{
+			Kind: JOIN,
+			Data: nodeId,
+		}
+
+		piggybacks = append(piggybacks, PiggbackMessage{
+			message: joinPiggybackMessage,
+			ttl:     len(membershipList),
+		})
+
+		responseEnc, err := json.Marshal(membershipListResponse)
+		if err != nil {
+			return nil, err
+		}
+
+		response := Message{
+			Kind: JOIN,
+			Data: string(responseEnc),
+		}
+
+		responseEnc, err = json.Marshal(response)
+
+		return responseEnc, nil
+	} else {
+		// You should simply add this node to your list, if it does not exist already,
+		// or if you ain't it.
+		return nil, nil
 	}
-
-	membershipInfo[nodeId] = MemberInfo{
-		connection: &conn,
-		host:       ipAddr,
-		failed:     false,
-	}
-
-	// TODO inform other nodes to also add this node to their lists.
-
-	responseEnc, err := json.Marshal(membershipList)
-	if err != nil {
-		return nil, err
-	}
-
-	response := Message{
-		Kind: JOIN,
-		Data: string(responseEnc),
-	}
-
-	responseEnc, err = json.Marshal(response)
-
-	return responseEnc, nil
 }
 
 func ProcessPingMessage(request string, addr *net.UDPAddr) ([]byte, error) {

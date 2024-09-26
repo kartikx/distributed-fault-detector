@@ -1,3 +1,5 @@
+// Stores functionality for initiating messages.
+
 package main
 
 import (
@@ -8,7 +10,8 @@ import (
 	"time"
 )
 
-// TODO implement.
+var piggybacks PiggybackMessages
+
 func introduce() ([]string, *net.Conn, error) {
 	fmt.Println("Introducing")
 	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST))
@@ -16,7 +19,6 @@ func introduce() ([]string, *net.Conn, error) {
 		return nil, nil, err
 	}
 
-	// It could pass its IP in?
 	joinMessage := Message{Kind: JOIN, Data: ""}
 
 	// Create helper for encoding/decoding + error checks.
@@ -71,6 +73,7 @@ func startSender() {
 				log.Fatalf("Couldn't connect to server: %s", err.Error())
 			}
 
+			// TODO check piggybacks array here, and include messages.
 			fmt.Println("PING ", member)
 
 			message := Message{Kind: PING, Data: ""}
@@ -79,9 +82,8 @@ func startSender() {
 			connection.Write(messageEnc)
 
 			buffer := make([]byte, 1024)
-			// TODO add timeout to this.
 
-			// TODO would this would even if I were to re-use the connection?
+			// TODO would this work would even if I were to re-use the connection?
 			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_SECONDS * time.Second))
 			_, err = connection.Read(buffer)
 
@@ -102,5 +104,4 @@ func startSender() {
 
 		// TODO shuffle list here.
 	}
-
 }

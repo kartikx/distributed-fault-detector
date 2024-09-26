@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"time"
 )
 
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
@@ -13,6 +12,8 @@ var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
 var membershipList = []string{}
 
 var NODE_ID = ""
+
+var isIntroducer = false
 
 func main() {
 	// Do this at the start, so that the introducer can connect to you.
@@ -27,7 +28,11 @@ func main() {
 		log.Fatalf("Unable to get local IP")
 	}
 
-	if localIP != INTRODUCER_SERVER_HOST {
+	if localIP == INTRODUCER_SERVER_HOST {
+		isIntroducer = true
+	}
+
+	if isIntroducer {
 		members, introducer_conn, err := introduce()
 		fmt.Println("Received members: ", members)
 		if err != nil {
@@ -65,14 +70,10 @@ func main() {
 
 	fmt.Println("Printing membership info table")
 	for k, _ := range membershipInfo {
-		fmt.Printf("Node Id: %s", k)
+		fmt.Printf("Node Id: %s\n", k)
 	}
 
 	// Now process your membershiplist into membershipinfo
-
-	fmt.Println("Sleeping")
-	time.Sleep(10 * time.Second)
-	fmt.Println("Awake")
 
 	// Dial connection.
 	// go startSender()
