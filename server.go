@@ -64,7 +64,7 @@ func startListener() {
 				case HELLO:
 					ProcessHelloMessage(subMessage)
 				case FAIL:
-					log.Fatalf("Unsupported")
+					ProcessFailMessage(subMessage)
 				default:
 					log.Fatalf("Unexpected message kind")
 				}
@@ -144,4 +144,8 @@ func ProcessHelloMessage(message Message) error {
 	AddToPiggybacks(message, len(membershipList))
 
 	return nil
+}
+
+func ProcessFailMessage(message Message) {
+	fmt.Println("Received fail message: ", message)
 }
