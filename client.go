@@ -20,6 +20,8 @@ func startSender() {
 			connection := *membershipInfo[nodeId].connection
 
 			if connection == nil {
+				fmt.Println("Connection is nil")
+
 				// Perhaps connection is still being made. Sleep for some time.
 				time.Sleep(2 * time.Second)
 				continue

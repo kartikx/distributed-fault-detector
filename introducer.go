@@ -82,9 +82,10 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 		} else if ip == localIP {
 			nodeId = id
 		} else {
-			conn, err := net.Dial("udp", ip)
+			conn, err := net.Dial("udp", GetServerEndpoint(ip))
 
 			if err != nil {
+				fmt.Println("Failed to estabilish connection with: ", id)
 				// TODO what to do here? If it actually failed it should be detected by some other node.
 			}
 
