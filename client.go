@@ -16,6 +16,11 @@ func startSender() {
 			// TODO error check?
 			connection := *membershipInfo[member].connection
 
+			if connection == nil {
+				// Perhaps connection is still being made. Sleep for some time.
+				time.Sleep(2 * time.Second)
+			}
+
 			var messages Messages
 
 			for _, piggyback := range piggybacks {
