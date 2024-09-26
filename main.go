@@ -32,7 +32,7 @@ func main() {
 		isIntroducer = true
 	}
 
-	if isIntroducer {
+	if !isIntroducer {
 		members, introducer_conn, err := introduce()
 		fmt.Println("Received members: ", members)
 		if err != nil {
