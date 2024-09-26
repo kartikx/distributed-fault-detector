@@ -30,7 +30,7 @@ func main() {
 	if localIP != INTRODUCER_SERVER_HOST {
 		members, introducer_conn, err := introduce()
 		if err != nil {
-			log.Fatalf("Unable to join the group")
+			log.Fatalf("Unable to join the group: %s", err.Error())
 		}
 
 		for _, id := range members {
