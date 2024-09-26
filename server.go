@@ -37,6 +37,8 @@ func startListener() {
 		json.Unmarshal(buf[:mlen], &message)
 		var responseEnc []byte
 
+		fmt.Println("Server received message: ", message)
+
 		switch message.Kind {
 		case PING:
 			var messages Messages
