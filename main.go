@@ -29,6 +29,7 @@ func main() {
 
 	if localIP != INTRODUCER_SERVER_HOST {
 		members, introducer_conn, err := introduce()
+		fmt.Println("Received members: ", members)
 		if err != nil {
 			log.Fatalf("Unable to join the group: %s", err.Error())
 		}
@@ -62,6 +63,7 @@ func main() {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
+	fmt.Println("Printing membership info table")
 	for k, _ := range membershipInfo {
 		fmt.Printf("Node Id: %s", k)
 	}
