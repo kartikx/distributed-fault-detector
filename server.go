@@ -35,6 +35,7 @@ func startListener() {
 		var responseMessage Message
 
 		fmt.Println("Server received message: ", message)
+		sendMessage := false
 
 		switch message.Kind {
 		case PING:
@@ -57,6 +58,7 @@ func startListener() {
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
+					sendMessage = true
 				case LEAVE:
 					log.Fatalf("Unsupported")
 				case HELLO:
@@ -87,9 +89,13 @@ func startListener() {
 			continue
 		}
 
-		fmt.Println(ackResponse)
-		// fmt.Println("Writing Response: ", string(ackResponse))
-		// server.WriteToUDP(ackResponse, address)
+		if sendMessage {
+			// fmt.Println(ackResponse)
+			// fmt.Println("Writing Response: ", string(ackResponse))
+			server.WriteToUDP(ackResponse, address)
+		} else {
+			fmt.Println("Not writing")
+		}
 	}
 }
 
