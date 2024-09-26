@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
 	"strings"
@@ -38,4 +39,61 @@ func ConstructNodeID(ip string) string {
 
 func GetServerEndpoint(host string) string {
 	return fmt.Sprintf("%s:%d", host, SERVER_PORT)
+}
+
+// Take a list of messages and encodes them into a PING.
+func GetEncodedPingMessage(messages Messages) ([]byte, error) {
+	messagesEnc, err := json.Marshal(messages)
+	if err != nil {
+		return nil, err
+	}
+
+	pingMessage := Message{Kind: PING, Data: string(messagesEnc)}
+
+	pingMessageEnc, err := json.Marshal(pingMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	return pingMessageEnc, nil
+}
+
+func GetEncodedAckMessage(messages Messages) ([]byte, error) {
+	messagesEnc, err := json.Marshal(messages)
+	if err != nil {
+		return nil, err
+	}
+
+	ackMessage := Message{Kind: PING, Data: string(messagesEnc)}
+
+	ackMessageEnc, err := json.Marshal(ackMessage)
+	if err != nil {
+		return nil, err
+	}
+
+	return ackMessageEnc, nil
+}
+
+func AddToPiggybacks(message Message, ttl int) {
+	// TODO thread safety
+	piggybacks = append(piggybacks, PiggbackMessage{message, ttl})
+}
+
+// For a given message, returns the sub-messages present inside it.
+func GetDecodedSubMessages(messageEnc []byte) (Messages, error) {
+	var message Message
+
+	err := json.Unmarshal(messageEnc, &message)
+	if err != nil {
+		return nil, err
+	}
+
+	var messages Messages
+
+	err = json.Unmarshal([]byte(message.Data), &messages)
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }

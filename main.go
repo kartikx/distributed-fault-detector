@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net"
 )
 
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
@@ -16,14 +15,12 @@ var NODE_ID = ""
 var isIntroducer = false
 
 func main() {
-	// Do this at the start, so that the introducer can connect to you.
+	// Listener is started even before introduction so that the
+	// introducer can make a connection.
 	go startListener()
 
 	// TODO write a logging abstraction to direct all logs into a file.
 	localIP, err := GetLocalIP()
-
-	fmt.Println("IP: ", localIP)
-
 	if err != nil {
 		log.Fatalf("Unable to get local IP")
 	}
@@ -33,50 +30,35 @@ func main() {
 	}
 
 	if !isIntroducer {
-		members, introducer_conn, err := introduce()
-		fmt.Println("Received members: ", members)
+		members, introducer_conn, err := IntroduceYourself()
 		if err != nil {
 			log.Fatalf("Unable to join the group: %s", err.Error())
 		}
 
-		for _, id := range members {
-			ip := GetIPFromID(id)
+		NODE_ID = InitializeMembershipInfo(members, introducer_conn, localIP)
 
-			if ip == INTRODUCER_SERVER_HOST {
-				membershipInfo[id] = MemberInfo{
-					connection: introducer_conn,
-					host:       id,
-					failed:     false,
-				}
-			} else if ip == localIP {
-				NODE_ID = id
-			} else {
-				conn, err := net.Dial("udp", ip)
-
-				if err != nil {
-					// TODO what to do here? If it actually failed it should be detected by some other node.
-				}
-
-				membershipInfo[id] = MemberInfo{
-					connection: &conn,
-					host:       id,
-					failed:     false,
-				}
-			}
+		helloMessage := Message{
+			Kind: HELLO,
+			Data: NODE_ID,
 		}
+
+		AddToPiggybacks(helloMessage, len(membershipList))
 	} else {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
 	fmt.Println("Printing membership info table")
-	for k, _ := range membershipInfo {
-		fmt.Printf("Node Id: %s\n", k)
+	for nodeId := range membershipInfo {
+		fmt.Printf("Node Id: %s\n", nodeId)
 	}
 
-	// Now process your membershiplist into membershipinfo
+	fmt.Println("Printing piggybacks")
+	for _, p := range piggybacks {
+		fmt.Println(p)
+	}
 
 	// Dial connection.
-	go startSender()
+	// go startSender()
 
 	// to force waiting.
 	ch := make(chan int)

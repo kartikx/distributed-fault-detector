@@ -32,7 +32,7 @@ func startListener() {
 
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
-		var responseEnc []byte
+		var responseMessage Message
 
 		fmt.Println("Server received message: ", message)
 
@@ -40,18 +40,28 @@ func startListener() {
 		case PING:
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
+
+			if err != nil {
+				fmt.Println("Failed to unmarshal PING messages, skipping")
+				continue
+			}
+
+			// Each PING contains multiple messages within it.
+			// TODO How do i handle multiple messages? For example, 2 joins, 1 LEAVE and 1 FAIL?
+			// TODO The same piggyback logic should be applied on ACK side.
 			for _, subMessage := range messages {
 				switch subMessage.Kind {
 				case JOIN:
-					fmt.Println("Case: JOIN")
-					// TODO this will differ depending on whether you are introducer or not.
-					// How do i handle multiple messages?
-					responseEnc, err = ProcessJoinMessage(subMessage.Data, address)
+					fmt.Println("submessage JOIN")
+					responseMessage, err = ProcessJoinMessage(subMessage.Data, address)
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
-				case PING:
-					responseEnc, _ = ProcessPingMessage(subMessage.Data, address)
+				case LEAVE:
+				case HELLO:
+				case FAIL:
+					// PING shouldn't have another PING within it?
+					// responseEnc, _ = ProcessPingMessage(subMessage.Data, address)
 				default:
 					log.Fatalf("Unexpected message kind")
 				}
@@ -65,71 +75,32 @@ func startListener() {
 			log.Fatalf("Unexpected message kind")
 		}
 
-		fmt.Println("Writing: ", responseEnc)
-		server.WriteToUDP(responseEnc, address)
+		ackResponse, err := GetEncodedAckMessage(Messages{responseMessage})
+
+		if err != nil {
+			fmt.Println("Failed to generate response.")
+			continue
+		}
+
+		fmt.Println("Writing Response: ", string(ackResponse))
+		server.WriteToUDP(ackResponse, address)
 	}
 }
 
-func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
+// request contains the encoded Data of the JOIN message.
+// addr is the address of the host that sent this PING.
+func ProcessJoinMessage(request string, addr *net.UDPAddr) (Message, error) {
 	if isIntroducer {
-		// TODO Add corner case checking, what if the introducer gets a looped around message from
-		// the past? It should check that the node doesn't already exist.
-
-		fmt.Println("Join message body: ", request)
-
-		ipAddr := addr.IP.String()
-		nodeId := ConstructNodeID(ipAddr)
-
-		fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
-
-		membershipList = append(membershipList, nodeId)
-
-		// For the response, add yourself to the list as well.
-		membershipListResponse := append(membershipList, NODE_ID)
-
-		conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
-		if err != nil {
-			return nil, err
-		}
-
-		membershipInfo[nodeId] = MemberInfo{
-			connection: &conn,
-			host:       ipAddr,
-			failed:     false,
-		}
-
-		// Informing other nodes to add this node to their lists via piggybacks.
-		joinPiggybackMessage := Message{
-			Kind: JOIN,
-			Data: nodeId,
-		}
-
-		piggybacks = append(piggybacks, PiggbackMessage{
-			message: joinPiggybackMessage,
-			ttl:     len(membershipList),
-		})
-
-		responseEnc, err := json.Marshal(membershipListResponse)
-		if err != nil {
-			return nil, err
-		}
-
-		response := Message{
-			Kind: JOIN,
-			Data: string(responseEnc),
-		}
-
-		responseEnc, err = json.Marshal(response)
-
-		return responseEnc, nil
+		joinResponse, err := IntroduceNodeToGroup(request, addr)
+		return joinResponse, err
 	} else {
 		// You should simply add this node to your list, if it does not exist already,
 		// or if you ain't it.
-		return nil, nil
+		return Message{}, fmt.Errorf("Unexpected JOIN message received for non Introducer node")
 	}
 }
 
-func ProcessPingMessage(request string, addr *net.UDPAddr) ([]byte, error) {
+func getPingResponse([]byte, error) string {
 	response := Message{
 		Kind: ACK,
 		Data: "",
@@ -137,5 +108,5 @@ func ProcessPingMessage(request string, addr *net.UDPAddr) ([]byte, error) {
 
 	responseEnc, _ := json.Marshal(response)
 
-	return responseEnc, nil
+	return string(responseEnc)
 }
