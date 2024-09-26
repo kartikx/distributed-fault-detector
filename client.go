@@ -62,7 +62,7 @@ func startSender() {
 			// TODO should I close this?
 			// defer connection.Close()
 
-			time.Sleep(4 * time.Second)
+			time.Sleep(PING_INTERVAL * time.Second)
 		}
 
 		// TODO shuffle list here.
