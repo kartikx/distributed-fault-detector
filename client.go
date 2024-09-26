@@ -42,7 +42,7 @@ func introduce() ([]string, *net.Conn, error) {
 		return nil, nil, err
 	}
 
-	fmt.Println("Attempting to unmarshal")
+	fmt.Println("Attempting to unmarshal ", buffer[:mLen])
 	var response Message
 	err = json.Unmarshal(buffer[:mLen], &response)
 	if err != nil {
