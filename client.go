@@ -9,16 +9,18 @@ import (
 )
 
 // TODO implement.
-func introduce() {
+func introduce() error {
 	// Send join message to the introducer.
 	// fmt.Printf("%s sending JOIN message\n", listenPort)
-	conn, err := net.Dial("udp", "localhost:"+INTRODUCER_PORT)
 
+	// TODO How can the introducer avoid this?
+
+	conn, err := net.Dial("udp", INTRODUCER_SERVER)
 	if err != nil {
-		log.Fatalln("Unable to dial introducer")
+		return err
 	}
 
-	joinMessage := Message{Kind: JOIN, Data: "Let me in"}
+	joinMessage := Message{Kind: PING, Data: "Let me in"}
 
 	messageEnc, _ := json.Marshal(joinMessage)
 
@@ -39,6 +41,7 @@ func introduce() {
 
 	// construct a membership map by trying to connect to the members.
 	// note: things can fail here.
+	return nil
 }
 
 func startSender() {

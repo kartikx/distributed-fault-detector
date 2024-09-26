@@ -34,7 +34,7 @@ func returnMembers(selfPort, requestPort string) []string {
 
 func getMembers() ([]string, net.Conn, error) {
 	// dial connection to introducer.
-	connection, err := net.Dial("udp", SERVER+":"+INTRODUCER_PORT)
+	connection, err := net.Dial("udp", INTRODUCER_SERVER)
 
 	if err != nil {
 		log.Fatalf("Couldn't connect to introducer: %s", err.Error())
@@ -50,14 +50,14 @@ func getMembers() ([]string, net.Conn, error) {
 func addNewNodeToMembershipList(requestPort string) {
 	// TODO You'll be opening a lot of connections in this
 	// program, remember to close them eventually.
-	connection, err := net.Dial("udp", SERVER+":"+requestPort)
+	connection, err := net.Dial("udp", SERVER_HOST+":"+requestPort)
 
 	if err != nil {
 		log.Fatalf("Couldn't connect to server: %s", err.Error())
 	}
 
 	membershipInfo[requestPort] = MemberInfo{
-		server:     SERVER,
+		server:     SERVER_HOST,
 		port:       requestPort,
 		connection: connection,
 	}
@@ -72,7 +72,7 @@ func sendJoinMessage(info MemberInfo, nodeId string) {
 
 func startListener() {
 	addr := &net.UDPAddr{
-		IP:   net.ParseIP(SERVER),
+		IP:   net.ParseIP(SERVER_HOST),
 		Port: SERVER_PORT,
 		Zone: "",
 	}
