@@ -10,6 +10,9 @@ import (
 var piggybacks PiggybackMessages
 
 func startSender() {
+	// TODO I feel we should start this after introduction is complete and everything is stable.
+	time.Sleep(5 * time.Second)
+
 	for {
 		// TODO Make this asynchronous using a goroutine.
 		for _, nodeId := range membershipList {
