@@ -56,10 +56,6 @@ func main() {
 	// Dial connection.
 	// go startSender()
 
-	// to force waiting.
-	ch := make(chan int)
-	<-ch
-
 	var b []byte = make([]byte, 1)
 
 	for {
