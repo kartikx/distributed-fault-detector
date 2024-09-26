@@ -10,9 +10,9 @@ const (
 )
 
 type MemberInfo struct {
-	connection net.Conn
-	server     string
-	port       string
+	connection *net.Conn
+	host       string
+	failed     bool
 }
 
 type MessageType int32

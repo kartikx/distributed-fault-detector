@@ -3,45 +3,68 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
+	"net"
 	"time"
 )
 
-// TODO @kartikr2 This should be indexed by the identifier.
 var membershipInfo map[string]MemberInfo
 
 // Stores the identifiers, gets shuffled and round-robinned for pings.
 var membershipList = []string{}
 
-func main() {
-	num := os.Args[1]
+var NODE_ID = ""
 
-	// TODO this should be populated via introduction.
-	switch num {
-	case "0":
-		membershipList = append(membershipList, "fa24-cs425-6402.cs.illinois.edu", "fa24-cs425-6403.cs.illinois.edu")
-	case "1":
-		membershipList = append(membershipList, "fa24-cs425-6401.cs.illinois.edu", "fa24-cs425-6403.cs.illinois.edu")
-	case "2":
-		membershipList = append(membershipList, "fa24-cs425-6401.cs.illinois.edu", "fa24-cs425-6402.cs.illinois.edu")
-	}
+func main() {
+	// Do this at the start, so that the introducer can connect to you.
+	go startListener()
 
 	// TODO write a logging abstraction to direct all logs into a file.
 	localIP, err := GetLocalIP()
+
+	fmt.Println("IP: ", localIP)
 
 	if err != nil {
 		log.Fatalf("Unable to get local IP")
 	}
 
-	fmt.Println(localIP)
+	if localIP != INTRODUCER_SERVER_HOST {
+		members, introducer_conn, err := introduce()
+		if err != nil {
+			log.Fatalf("Unable to join the group")
+		}
 
-	// TODO @kartikr2 This should be a check on VM name instead.
-	// isIntroducer := listenPort == INTRODUCER_PORT
-	// if !isIntroducer {
-	// introduce(name, listenPort)
-	// }
+		for _, id := range members {
+			ip := GetIPFromID(id)
 
-	// go startListener()
+			if ip == INTRODUCER_SERVER_HOST {
+				membershipInfo[id] = MemberInfo{
+					connection: introducer_conn,
+					host:       id,
+					failed:     false,
+				}
+			} else if ip == localIP {
+				NODE_ID = id
+			} else {
+				conn, err := net.Dial("udp", ip)
+
+				if err != nil {
+					// TODO what to do here? If it actually failed it should be detected by some other node.
+				}
+
+				membershipInfo[id] = MemberInfo{
+					connection: &conn,
+					host:       id,
+					failed:     false,
+				}
+			}
+		}
+	} else {
+		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
+	}
+
+	fmt.Println(membershipInfo)
+
+	// Now process your membershiplist into membershipinfo
 
 	fmt.Println("Sleeping")
 	time.Sleep(10 * time.Second)

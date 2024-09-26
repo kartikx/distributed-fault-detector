@@ -9,39 +9,53 @@ import (
 )
 
 // TODO implement.
-func introduce() error {
-	// Send join message to the introducer.
-	// fmt.Printf("%s sending JOIN message\n", listenPort)
-
-	// TODO How can the introducer avoid this?
-
-	conn, err := net.Dial("udp", INTRODUCER_SERVER)
+func introduce() ([]string, *net.Conn, error) {
+	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	joinMessage := Message{Kind: PING, Data: "Let me in"}
+	// It could pass its IP in?
+	joinMessage := Message{Kind: JOIN, Data: ""}
 
-	messageEnc, _ := json.Marshal(joinMessage)
+	// Create helper for encoding/decoding + error checks.
+	joinMessageEnc, err := json.Marshal(Messages{joinMessage})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// I could construct a helper for this.
+	pingMessage := Message{Kind: PING, Data: string(joinMessageEnc)}
+
+	messageEnc, err := json.Marshal(pingMessage)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	conn.Write(messageEnc)
 
 	buffer := make([]byte, 1024)
-	fmt.Println("%s waiting for a response")
+	// fmt.Println("%s waiting for a response")
 	mLen, err := conn.Read(buffer)
 	if err != nil {
-		fmt.Println("Error reading:", err.Error())
+		return nil, nil, err
 	}
+
 	var response Message
-	json.Unmarshal(buffer[:mLen], &response)
+	err = json.Unmarshal(buffer[:mLen], &response)
+	if err != nil {
+		return nil, nil, err
+	}
 	fmt.Println("Received: ", response)
-	// members, conn, err := getMembers()
 
-	// iterate over the membership list.
+	// TODO Could use a struct for this.
+	var members []string
+	err = json.Unmarshal([]byte(response.Data), &members)
+	if err != nil {
+		return nil, nil, err
+	}
 
-	// construct a membership map by trying to connect to the members.
-	// note: things can fail here.
-	return nil
+	return members, &conn, nil
 }
 
 func startSender() {

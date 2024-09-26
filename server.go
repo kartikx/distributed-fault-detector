@@ -4,71 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net"
-	"time"
 )
 
-// TODO requestPort should be an identifier
-func returnMembers(selfPort, requestPort string) []string {
-	var members []string
-
-	// process its members (taking failed / suspicious nodes into account)
-	for k, v := range membershipInfo {
-		// TODO @kartikr2 Should I take failed / sus nodes into account here?
-		members = append(members, k)
-
-		// inform every other node that a new node has joined the system.
-		sendJoinMessage(v, requestPort)
-	}
-
-	// add itself to the members
-	members = append(members, selfPort)
-
-	// add the newnode to the membership list
-	addNewNodeToMembershipList(requestPort)
-
-	// return list.
-	return members
-}
-
-func getMembers() ([]string, net.Conn, error) {
-	// dial connection to introducer.
-	connection, err := net.Dial("udp", INTRODUCER_SERVER)
-
-	if err != nil {
-		log.Fatalf("Couldn't connect to introducer: %s", err.Error())
-	}
-
-	// send it a JOIN message.
-
-	// read from the response.
-	return []string{"8001"}, connection, nil
-}
-
-// TODO requestPort should instead be IP/Port/Identifier
-func addNewNodeToMembershipList(requestPort string) {
-	// TODO You'll be opening a lot of connections in this
-	// program, remember to close them eventually.
-	connection, err := net.Dial("udp", SERVER_HOST+":"+requestPort)
-
-	if err != nil {
-		log.Fatalf("Couldn't connect to server: %s", err.Error())
-	}
-
-	membershipInfo[requestPort] = MemberInfo{
-		server:     SERVER_HOST,
-		port:       requestPort,
-		connection: connection,
-	}
-
-	fmt.Printf("Added %s to membership list", requestPort)
-}
-
-func sendJoinMessage(info MemberInfo, nodeId string) {
-	// TODO implement.
-	fmt.Println("Sending join to", info.port)
-}
+// func sendJoinMessage(info MemberInfo, nodeId string) {
+// 	// TODO implement.
+// 	fmt.Println("Sending join to", info.port)
+// }
 
 func startListener() {
 	addr := &net.UDPAddr{
@@ -93,22 +35,68 @@ func startListener() {
 
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
-		var response Message
+		var responseEnc []byte
 
 		switch message.Kind {
 		case JOIN:
-			response.Kind = JOIN
-			response.Data = "JOIN RESPONSE"
+			responseEnc, err = ProcessJoinMessage(string(buf[:mlen]), addr)
 		case PING:
-			response.Kind = ACK
-			response.Data = ""
+			responseEnc, err = ProcessPingMessage(string(buf[:mlen]), addr)
 			// Adding a random sleep to simulate failures.
-			var sleepTime time.Duration = time.Duration(rand.Intn(4)) * time.Second
-			fmt.Println("PING from: ", address, " Sleep for: ", sleepTime)
-			time.Sleep(sleepTime)
+			// var sleepTime time.Duration = time.Duration(rand.Intn(4)) * time.Second
+			// fmt.Println("PING from: ", address, " Sleep for: ", sleepTime)
+			// time.Sleep(sleepTime)
 		}
 
-		responseEnc, _ := json.Marshal(response)
 		server.WriteToUDP(responseEnc, address)
 	}
+}
+
+func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
+	fmt.Println("Join message body: ", request)
+
+	// TODO get ip address, construct node id, get existing member list, construct response body.
+	ipAddr := addr.IP.String()
+	nodeId := ConstructNodeID(ipAddr)
+
+	membershipList = append(membershipList, nodeId)
+
+	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
+
+	if err != nil {
+		return nil, nil
+	}
+
+	membershipInfo[nodeId] = MemberInfo{
+		connection: &conn,
+		host:       ipAddr,
+		failed:     false,
+	}
+
+	// TODO inform other nodes to also add this node to their lists.
+
+	responseEnc, err := json.Marshal(membershipList)
+	if err != nil {
+		return nil, err
+	}
+
+	response := Message{
+		Kind: JOIN,
+		Data: string(responseEnc),
+	}
+
+	responseEnc, err = json.Marshal(response)
+
+	return responseEnc, nil
+}
+
+func ProcessPingMessage(request string, addr *net.UDPAddr) ([]byte, error) {
+	response := Message{
+		Kind: ACK,
+		Data: "",
+	}
+
+	responseEnc, _ := json.Marshal(response)
+
+	return responseEnc, nil
 }
