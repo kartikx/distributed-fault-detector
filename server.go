@@ -122,7 +122,9 @@ func ProcessHelloMessage(message Message) error {
 	// For the hello message, nodeId is expected to be the node Id.
 	nodeId := message.Data
 
-	if _, ok := membershipInfo[nodeId]; ok {
+	_, ok := membershipInfo[nodeId]
+
+	if ok || nodeId == NODE_ID {
 		fmt.Printf("Node %s already exists in membership info, Skipping \n", nodeId)
 		return nil
 	}
