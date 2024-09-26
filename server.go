@@ -49,7 +49,10 @@ func startListener() {
 					fmt.Println("Case: JOIN")
 					// TODO this will differ depending on whether you are introducer or not.
 					// How do i handle multiple messages?
-					responseEnc, _ = ProcessJoinMessage(subMessage.Data, addr)
+					responseEnc, err = ProcessJoinMessage(subMessage.Data, addr)
+					if err != nil {
+						log.Fatalf("Failed to process join message")
+					}
 				case PING:
 					responseEnc, _ = ProcessPingMessage(subMessage.Data, addr)
 				default:
@@ -82,12 +85,13 @@ func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
 	ipAddr := addr.IP.String()
 	nodeId := ConstructNodeID(ipAddr)
 
+	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
+
 	membershipList = append(membershipList, nodeId)
 
 	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
-
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	membershipInfo[nodeId] = MemberInfo{
