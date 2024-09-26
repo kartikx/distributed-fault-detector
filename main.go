@@ -76,7 +76,7 @@ func main() {
 	// Now process your membershiplist into membershipinfo
 
 	// Dial connection.
-	// go startSender()
+	go startSender()
 
 	// to force waiting.
 	ch := make(chan int)
