@@ -30,7 +30,7 @@ func startSender() {
 				continue
 			}
 
-			fmt.Printf("PING %s [%s]", member, pingMessageEnc)
+			fmt.Printf("PING %s [%s]\n", member, pingMessageEnc)
 
 			connection.Write(pingMessageEnc)
 
