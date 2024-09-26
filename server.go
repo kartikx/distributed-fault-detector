@@ -38,14 +38,28 @@ func startListener() {
 		var responseEnc []byte
 
 		switch message.Kind {
-		case JOIN:
-			responseEnc, err = ProcessJoinMessage(string(buf[:mlen]), addr)
 		case PING:
-			responseEnc, err = ProcessPingMessage(string(buf[:mlen]), addr)
+			var messages Messages
+			err = json.Unmarshal([]byte(message.Data), &messages)
+			for _, subMessage := range messages {
+				switch subMessage.Kind {
+				case JOIN:
+					// TODO this will differ depending on whether you are introducer or not.
+					// How do i handle multiple messages?
+					responseEnc, _ = ProcessJoinMessage(subMessage.Data, addr)
+				case PING:
+					responseEnc, _ = ProcessPingMessage(subMessage.Data, addr)
+				default:
+					log.Fatalf("Unexpected message kind")
+				}
+			}
+
 			// Adding a random sleep to simulate failures.
 			// var sleepTime time.Duration = time.Duration(rand.Intn(4)) * time.Second
 			// fmt.Println("PING from: ", address, " Sleep for: ", sleepTime)
 			// time.Sleep(sleepTime)
+		default:
+			log.Fatalf("Unexpected message kind")
 		}
 
 		server.WriteToUDP(responseEnc, address)
@@ -53,6 +67,11 @@ func startListener() {
 }
 
 func ProcessJoinMessage(request string, addr *net.UDPAddr) ([]byte, error) {
+	// TODO Add a check here for whether you are the introducer or not.
+
+	// TODO Add corner case checking, what if the introducer gets a looped around message from
+	// the past? It should check that the node doesn't already exist.
+
 	fmt.Println("Join message body: ", request)
 
 	// TODO get ip address, construct node id, get existing member list, construct response body.
