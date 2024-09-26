@@ -66,8 +66,6 @@ func readMembersFromResponse(buffer []byte) ([]string, error) {
 // Initalizes the Membership Information map for the newly joined node.
 // Returns the NODE_ID for this node.
 func InitializeMembershipInfo(members []string, introducer_conn *net.Conn, localIP string) string {
-	fmt.Println("Received members: ", members)
-
 	nodeId := ""
 
 	for _, id := range members {

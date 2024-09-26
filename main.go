@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 )
 
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
@@ -52,15 +53,24 @@ func main() {
 		fmt.Printf("Node Id: %s\n", nodeId)
 	}
 
-	fmt.Println("Printing piggybacks")
-	for _, p := range piggybacks {
-		fmt.Println(p)
-	}
-
 	// Dial connection.
 	// go startSender()
 
 	// to force waiting.
 	ch := make(chan int)
 	<-ch
+
+	var b []byte = make([]byte, 1)
+
+	for {
+		os.Stdin.Read(b)
+
+		switch b[0] {
+		case 'm':
+			PrintMembershipList()
+			PrintMembershipInfo()
+		case 'p':
+			PrintPiggybackMessages()
+		}
+	}
 }

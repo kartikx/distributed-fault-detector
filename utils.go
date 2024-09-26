@@ -97,3 +97,24 @@ func GetDecodedSubMessages(messageEnc []byte) (Messages, error) {
 
 	return messages, nil
 }
+
+func PrintMembershipInfo() {
+	fmt.Println("====Membership Info===")
+	for k, v := range membershipInfo {
+		fmt.Println(k, v)
+	}
+}
+
+func PrintMembershipList() {
+	fmt.Println("====Membership List===")
+	for _, v := range membershipList {
+		fmt.Println(v)
+	}
+}
+
+func PrintPiggybackMessages() {
+	fmt.Println("Printing piggybacks")
+	for _, p := range piggybacks {
+		fmt.Println(p)
+	}
+}
