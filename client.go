@@ -76,7 +76,15 @@ func startSender() {
 			// TODO check piggybacks array here, and include messages.
 			fmt.Println("PING ", member)
 
-			message := Message{Kind: PING, Data: ""}
+			var messages Messages
+
+			for _, piggyback := range piggybacks {
+				messages = append(messages, piggyback.message)
+			}
+
+			messagesEnc, _ := json.Marshal(messages)
+
+			message := Message{Kind: PING, Data: string(messagesEnc)}
 			messageEnc, _ := json.Marshal(message)
 
 			connection.Write(messageEnc)
@@ -88,8 +96,18 @@ func startSender() {
 			_, err = connection.Read(buffer)
 
 			if err != nil {
-				// TODO Start propagating FAIL message.
-				fmt.Println("Error reading:", err.Error())
+				fmt.Println("Add failed message for: ", member)
+
+				// Start propagating FAIL message.
+				failedMessage := Message{
+					Kind: FAIL,
+					Data: member,
+				}
+
+				// TODO create helper method that appends to piggyback in a thread-safe way.
+				piggybacks = append(piggybacks, PiggbackMessage{message: failedMessage, ttl: 1})
+
+				continue
 			}
 
 			// No need to read ACK. Empty response is good enough.
@@ -99,7 +117,7 @@ func startSender() {
 			// TODO should I close this?
 			// defer connection.Close()
 
-			time.Sleep(2 * time.Second)
+			time.Sleep(4 * time.Second)
 		}
 
 		// TODO shuffle list here.

@@ -7,6 +7,7 @@ const (
 	JOIN  MessageType = 1
 	LEAVE MessageType = 2
 	ACK   MessageType = 3
+	FAIL  MessageType = 4
 )
 
 type MemberInfo struct {
