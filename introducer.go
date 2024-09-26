@@ -30,7 +30,7 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 		return nil, nil, err
 	}
 
-	members, err := readMembersFromResponse(buffer[:mLen])
+	members, err := parseMembersFromResponse(buffer[:mLen])
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,7 +40,7 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 	return members, &conn, nil
 }
 
-func readMembersFromResponse(buffer []byte) ([]string, error) {
+func parseMembersFromResponse(buffer []byte) ([]string, error) {
 	// fmt.Println("JOIN Response: ", response)
 
 	messages, err := GetDecodedSubMessages(buffer)
@@ -65,7 +65,7 @@ func readMembersFromResponse(buffer []byte) ([]string, error) {
 
 // Initalizes the Membership Information map for the newly joined node.
 // Returns the NODE_ID for this node.
-func InitializeMembershipInfo(members []string, introducer_conn *net.Conn, localIP string) string {
+func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn, localIP string) string {
 	nodeId := ""
 
 	for _, id := range members {

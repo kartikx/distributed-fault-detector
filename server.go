@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
+	"time"
 )
 
 func startListener() {
@@ -70,13 +72,13 @@ func startListener() {
 
 			// Adding a random sleep to simulate failures.
 			// TODO @sriram Implement rand with upgrading go version.
-			// var sleepTime time.Duration = time.Duration(rand.Intn(10)) * time.Second
+			var sleepTime time.Duration = time.Duration(rand.Intn(10)) * time.Second
 
-			// if sleepTime > 5*time.Second {
-			// 	fmt.Println("SIMULATING FAILURE")
-			// }
+			if sleepTime > 5*time.Second {
+				fmt.Println("SIMULATING FAILURE")
+			}
 
-			// time.Sleep(sleepTime)
+			time.Sleep(sleepTime)
 		default:
 			log.Fatalf("Unexpected message kind")
 		}

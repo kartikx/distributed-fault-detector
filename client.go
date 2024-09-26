@@ -72,3 +72,7 @@ func startSender() {
 		// TODO shuffle list here.
 	}
 }
+
+func ExitGroup() {
+	// TODO implement.
+}

@@ -8,6 +8,7 @@ import (
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
 
 // Stores the identifiers, gets shuffled and round-robinned for pings.
+// TODO You could just as well use the keys on membershipInfo instead of having a second list. Can refactor later.
 var membershipList = []string{}
 
 var NODE_ID = ""
@@ -35,7 +36,7 @@ func main() {
 			log.Fatalf("Unable to join the group: %s", err.Error())
 		}
 
-		NODE_ID = InitializeMembershipInfo(members, introducer_conn, localIP)
+		NODE_ID = InitializeMembershipInfoAndList(members, introducer_conn, localIP)
 
 		helloMessage := Message{
 			Kind: HELLO,
@@ -62,6 +63,8 @@ func main() {
 				PrintMembershipInfo()
 			case 'p':
 				PrintPiggybackMessages()
+			case 'e':
+				ExitGroup()
 			}
 		}
 	}()

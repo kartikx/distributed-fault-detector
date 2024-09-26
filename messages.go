@@ -25,16 +25,6 @@ type Message struct {
 	Data string
 }
 
-/*
-PING
-[{HELLO, "2.1"}, {FAIL, "2.2"}, {LEAVE, "3.2"}]
-
-PING
-["JOIN", ""]
-
-JOIN, [""]
-*/
-
 type Messages []Message
 
 type PiggbackMessage struct {
