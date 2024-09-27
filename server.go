@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 )
 
 func startListener() {
@@ -74,6 +75,8 @@ func startListener() {
 			// }
 
 			// time.Sleep(sleepTime)
+		case LEAVE:
+			ProcessFailOrLeaveMessage(message)
 		default:
 			log.Fatalf("Unexpected message kind")
 		}
@@ -138,7 +141,7 @@ func ProcessHelloMessage(message Message) error {
 	return nil
 }
 
-func ProcessFailOrLeaveMessage(message Message) {
+func ProcessFailOrLeaveMessage(message Message) error {
 
 	fmt.Println("Processing Fail/Leave Message: ", message)
 
@@ -147,7 +150,7 @@ func ProcessFailOrLeaveMessage(message Message) {
 
 	// If it's you, be very confused.
 	if nodeId == NODE_ID {
-		os.Exit()
+		os.Exit(0)
 	}
 
 	_, ok := membershipInfo[nodeId]

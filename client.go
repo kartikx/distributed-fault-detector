@@ -3,8 +3,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
+	"os"
 )
 
 var piggybacks PiggybackMessages
@@ -100,10 +102,11 @@ func ExitGroup() {
 	leaveMessageEnc, err := json.Marshal(leaveMessage)
 	if err != nil {
 		fmt.Println("Unable to encode leave message")
-		continue
+		return
 	}
 
-	for _, nodeId := range membershipList {
+	members := GetMembers()
+	for _, nodeId := range members {
 		
 		connection := *membershipInfo[nodeId].connection
 		if connection != nil {
@@ -116,6 +119,6 @@ func ExitGroup() {
 
 	// TODO close the log file
 
-	os.Exit()
+	os.Exit(0)
 
 }
