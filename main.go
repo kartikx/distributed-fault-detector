@@ -11,7 +11,7 @@ var NODE_ID = ""
 var isIntroducer = false
 
 func main() {
-	ch := make(chan int)
+	ch := make(chan int, 5)
 
 	// Listener is started even before introduction so that the
 	// introducer can make a connection to this node.
