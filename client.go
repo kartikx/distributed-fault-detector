@@ -4,7 +4,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -26,7 +28,7 @@ func startClient(clientServerChan chan int) {
 
 			var messagesToPiggyback Messages = GetUnexpiredPiggybackMessages()
 
-			fmt.Println("Sender has messages: ", len(messagesToPiggyback))
+			// fmt.Println("Sender has messages: ", len(messagesToPiggyback))
 
 			pingMessageEnc, err := EncodePingMessage(messagesToPiggyback)
 
@@ -35,7 +37,7 @@ func startClient(clientServerChan chan int) {
 				continue
 			}
 
-			fmt.Printf("PING %s [%s]\n", nodeId, pingMessageEnc)
+			fmt.Printf("PINGING %s [%s]\n", nodeId, pingMessageEnc)
 
 			connection.Write(pingMessageEnc)
 
@@ -48,18 +50,29 @@ func startClient(clientServerChan chan int) {
 			if err != nil {
 				fmt.Printf("%s timed out\n", nodeId)
 
-				// TODO in suspicion, you would want to suspect it first.
-				DeleteMember(nodeId)
+				// In suspicion, you would want to suspect it first.
+				if inSuspectMode {
+					// Create a SUSPECT message to process and disseminate
+					member, _ := GetMemberInfo(nodeId)
+					suspectMessage := Message{Kind: SUSPECT, Data: strconv.Itoa(member.incarnation) + "@" + nodeId}
+					fmt.Println("Creating a suspect message for:", nodeId, ":", suspectMessage)
+					go ProcessSuspectMessage(suspectMessage)
 
-				// Start propagating FAIL message.
-				failedMessage := Message{
-					Kind: FAIL,
-					Data: nodeId,
+					continue
+				} else { // Otherwise, just mark the node as failed
+
+					DeleteMember(nodeId)
+
+					// Start propagating FAIL message.
+					failedMessage := Message{
+						Kind: FAIL,
+						Data: nodeId,
+					}
+
+					AddPiggybackMessage(failedMessage, len(membershipInfo))
+
+					continue
 				}
-
-				AddPiggybackMessage(failedMessage, len(membershipInfo))
-
-				continue
 			}
 			// TODO simulate drops on receiver end.
 
@@ -67,7 +80,7 @@ func startClient(clientServerChan chan int) {
 			fmt.Printf("Received ACK %s Response: [%s] \n", nodeId, buffer[:mLen])
 
 			messages, err := DecodeAckMessage(buffer[:mLen])
-			fmt.Println("Messages in ACK: ", len(messages))
+			// fmt.Println("Messages in ACK: ", len(messages))
 			if err != nil {
 				fmt.Printf("Unable to decode ACK message from node: %s", nodeId)
 				continue
@@ -81,8 +94,14 @@ func startClient(clientServerChan chan int) {
 					ProcessFailOrLeaveMessage(subMessage)
 				case FAIL:
 					ProcessFailOrLeaveMessage(subMessage)
+				case SUSPECT:
+					go ProcessSuspectMessage(subMessage)
+				case ALIVE:
+					ProcessAliveMessage(subMessage)
+				case SUSPECT_MODE:
+					ProcessSuspectModeMessage(subMessage)
 				default:
-					fmt.Printf("Unexpected message kind")
+					log.Fatalf("Unexpected submessage kind in ACK")
 				}
 			}
 
@@ -118,4 +137,14 @@ func ExitGroup() {
 
 	os.Exit(0)
 
+}
+
+func StartSuspecting() {
+	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "true"}
+	AddPiggybackMessage(suspectMessage, len(membershipInfo))
+}
+
+func StopSuspecting() {
+	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "false"}
+	AddPiggybackMessage(suspectMessage, len(membershipInfo))
 }

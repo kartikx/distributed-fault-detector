@@ -24,9 +24,11 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 	defer membershipInfoMutex.Unlock()
 
 	membershipInfo[nodeId] = MemberInfo{
-		connection: &conn,
-		host:       ipAddr,
-		failed:     false,
+		connection:  &conn,
+		host:        ipAddr,
+		failed:      false,
+		suspected:   false,
+		incarnation: 0,
 	}
 
 	return nil
@@ -93,4 +95,25 @@ func DeleteMember(nodeId string) {
 
 	// Deleting a non-existent entry is a no-op, so this operation is safe.
 	delete(membershipInfo, nodeId)
+}
+
+func UpdateMemberIncarnation(nodeId string, incarnation int) {
+	membershipInfoMutex.Lock()
+	defer membershipInfoMutex.Unlock()
+
+	member := membershipInfo[nodeId]
+	if member.incarnation < incarnation {
+		member.incarnation = incarnation
+		member.suspected = false
+	}
+	membershipInfo[nodeId] = member
+}
+
+func MarkMemberSuspected(nodeId string) {
+	membershipInfoMutex.Lock()
+	defer membershipInfoMutex.Unlock()
+
+	member := membershipInfo[nodeId]
+	member.suspected = true
+	membershipInfo[nodeId] = member
 }

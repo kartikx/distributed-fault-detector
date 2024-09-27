@@ -35,7 +35,9 @@ func GetIPFromID(id string) string {
 }
 
 func ConstructNodeID(ip string) string {
-	return fmt.Sprintf("%s@%s", ip, time.Now().Format(time.RFC3339))
+	// return fmt.Sprintf("%s@%s", ip, time.Now().Format(time.RFC3339))
+	return fmt.Sprintf("%s@%s", ip, time.Now().Format(time.TimeOnly))
+
 }
 
 func GetServerEndpoint(host string) string {

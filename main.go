@@ -7,7 +7,9 @@ import (
 )
 
 var NODE_ID = ""
+var INCARNATION = 0
 
+var inSuspectMode = false
 var isIntroducer = false
 
 func main() {
@@ -66,6 +68,10 @@ func main() {
 			ExitGroup()
 		case 's':
 			fmt.Println(localIP)
+		case 'd':
+			StartSuspecting()
+		case 'n':
+			StopSuspecting()
 		}
 	}
 }

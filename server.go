@@ -8,6 +8,9 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 func startServer(clientServerChan chan int) {
@@ -38,11 +41,11 @@ func startServer(clientServerChan chan int) {
 
 		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
-		fmt.Println("Server has messages: ", len(messagesToPiggyback))
+		// fmt.Println("Server has messages: ", len(messagesToPiggyback))
 
 		switch message.Kind {
 		case PING:
-			fmt.Println("Received PING: ", message)
+			fmt.Println("Processing PING message", message)
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
@@ -60,22 +63,28 @@ func startServer(clientServerChan chan int) {
 					ProcessFailOrLeaveMessage(subMessage)
 				case FAIL:
 					ProcessFailOrLeaveMessage(subMessage)
+				case SUSPECT:
+					go ProcessSuspectMessage(subMessage)
+				case ALIVE:
+					ProcessAliveMessage(subMessage)
+				case SUSPECT_MODE:
+					ProcessSuspectModeMessage(subMessage)
 				default:
-					log.Fatalf("Unexpected message kind")
+					log.Fatalf("Unexpected submessage kind in PING")
 				}
 			}
 		case JOIN:
 			fmt.Println("Received JOIN")
 			responseMessage, err := ProcessJoinMessage(message, address)
 			if err != nil {
-				log.Fatalf("Failed to process join message")
+				log.Fatalf("Failed to process join message", message)
 			}
 			// Don't piggyback anything, just return the join response.
 			messagesToPiggyback = Messages{responseMessage}
 		case LEAVE:
 			ProcessFailOrLeaveMessage(message)
 		default:
-			log.Fatalf("Unexpected message kind")
+			log.Fatalf("Unexpected message kind: ", message)
 		}
 
 		fmt.Println("Count of messages in ACK: ", len(messagesToPiggyback))
@@ -160,5 +169,123 @@ func ProcessFailOrLeaveMessage(message Message) error {
 		return nil
 	}
 
+	return nil
+}
+
+func ProcessSuspectMessage(message Message) error {
+	fmt.Println("Processing Suspect Message: ", message)
+
+	if !inSuspectMode {
+		fmt.Printf("Received a SUSPECT message when not in suspect mode")
+		return fmt.Errorf("SUSPECT message but not in suspect mode")
+	}
+
+	// SUSPECT message will be of type incarnation@IP@timestamp
+	parts := strings.Split(message.Data, "@")
+	message_incarnation, err := strconv.Atoi(parts[0])
+	if err != nil {
+		fmt.Printf("Unable to get incarnation number from a SUSPECT message", message_incarnation)
+		return nil
+	}
+	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
+
+	if nodeId == NODE_ID {
+
+		// If the self SUSPECT message is for an old self, ignore since the node already disseminated ALIVE
+		if message_incarnation < INCARNATION {
+			fmt.Printf("Received a SUSPECT message for an old self")
+			return nil
+		}
+
+		// If a node finds out that it is being suspected, it will increment incarnation and disseminate an ALIVE
+		INCARNATION += 1
+		aliveMessage := Message{Kind: ALIVE, Data: string(INCARNATION) + "@" + nodeId}
+		AddPiggybackMessage(aliveMessage, len(membershipInfo))
+
+		return nil
+	} else {
+
+		// Check the message incarnation
+		membershipInfoEntry, _ := GetMemberInfo(nodeId)
+		if (membershipInfoEntry.incarnation > message_incarnation) || membershipInfoEntry.suspected {
+			// You have a more recent incarnation or are suspecting, ignore the new SUSPECT message
+			return nil
+		}
+
+		MarkMemberSuspected(nodeId)
+
+		// Disseminate the SUSPECT message that you got
+		AddPiggybackMessage(message, len(membershipInfo))
+
+		// Wait for suspect timeout
+		time.Sleep(time.Second * SUSPECT_TIMEOUT)
+
+		// Check incarnation number in membership info, then disseminate FAIL
+		membershipInfoEntry, _ = GetMemberInfo(nodeId)
+		if membershipInfoEntry.incarnation > message_incarnation {
+			// You have a more recent incarnation, perhaps the suspected node sent an ALIVE
+			return nil
+		} else {
+			failMessage := Message{Kind: FAIL, Data: nodeId}
+			ProcessFailOrLeaveMessage(failMessage)
+		}
+	}
+
+	return nil
+}
+
+func ProcessAliveMessage(message Message) error {
+	fmt.Println("Processing Alive Message: ", message)
+
+	if !inSuspectMode {
+		fmt.Printf("Received an ALIVE message when not in suspect mode")
+		return fmt.Errorf("ALIVE message but not in suspect mode")
+	}
+
+	// ALIVE message will be of type incarnation@IP@timestamp
+	parts := strings.Split(message.Data, "@")
+	message_incarnation, err := strconv.Atoi(parts[0])
+	if err != nil {
+		fmt.Printf("Unable to get incarnation number from a SUSPECT message")
+		return nil
+	}
+	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
+
+	if nodeId == NODE_ID {
+		// If it is a self ALIVE message, ignore
+		return nil
+	} else {
+
+		// Check the message incarnation
+		membershipInfoEntry, _ := GetMemberInfo(nodeId)
+		if membershipInfoEntry.incarnation > message_incarnation {
+			// You have a more recent incarnation, ignore the new ALIVE message
+			return nil
+		}
+
+		// Disseminate the ALIVE message that you got
+		AddPiggybackMessage(message, len(membershipInfo))
+
+		// Update the incarnation number and not suspected
+		UpdateMemberIncarnation(nodeId, message_incarnation)
+	}
+
+	return nil
+}
+
+func ProcessSuspectModeMessage(message Message) error {
+	fmt.Println("Processing SUSPECT_MODE Message: ", message)
+
+	suspect_mode, err := strconv.ParseBool(message.Data)
+	if err != nil {
+		fmt.Printf("Was not able to parse SUSPECT_MODE message")
+		return fmt.Errorf("Was not able to parse SUSPECT_MODE message")
+	}
+
+	if suspect_mode != inSuspectMode {
+		inSuspectMode = suspect_mode
+		AddPiggybackMessage(message, len(membershipInfo))
+		return nil
+	}
 	return nil
 }
