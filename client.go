@@ -44,7 +44,7 @@ func startClient(clientServerChan chan int) {
 			mLen, err := connection.Read(buffer)
 
 			if err != nil {
-				fmt.Println("%s timed out", nodeId)
+				fmt.Printf("%s timed out\n", nodeId)
 
 				// TODO in suspicion, you would want to suspect it first.
 				DeleteMember(nodeId)
@@ -61,9 +61,28 @@ func startClient(clientServerChan chan int) {
 			}
 			// TODO simulate drops on receiver end.
 
-			// TODO Ack might have piggybacked information to be processed.
+			// TODO Process piggyback information.
+			fmt.Printf("Received ACK %s Response: [%s] \n", nodeId, buffer[:mLen])
 
-			fmt.Printf("Received ACK %s Response: [%s]", nodeId, buffer[:mLen])
+			messages, err := DecodeAckMessage(buffer[:mLen])
+			fmt.Println("Messages in ACK: ", len(messages))
+			if err != nil {
+				fmt.Printf("Unable to decode ACK message from node: %s", nodeId)
+				continue
+			}
+
+			for _, subMessage := range messages {
+				switch subMessage.Kind {
+				case HELLO:
+					ProcessHelloMessage(subMessage)
+				case LEAVE:
+					ProcessFailOrLeaveMessage(subMessage)
+				case FAIL:
+					ProcessFailOrLeaveMessage(subMessage)
+				default:
+					fmt.Printf("Unexpected message kind")
+				}
+			}
 
 			// TODO remove.
 			time.Sleep(PING_INTERVAL * time.Second)
