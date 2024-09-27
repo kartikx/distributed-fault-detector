@@ -6,9 +6,11 @@ import (
 )
 
 const (
-	PING  MessageType = 0
-	ACK   MessageType = 1
-	JOIN  MessageType = 2
+	// Top level message types.
+	PING MessageType = 0
+	ACK  MessageType = 1
+	JOIN MessageType = 2
+	// Piggybacked message types.
 	LEAVE MessageType = 3
 	FAIL  MessageType = 4
 	HELLO MessageType = 5
