@@ -26,6 +26,8 @@ func startClient(clientServerChan chan int) {
 
 			var messagesToPiggyback Messages = GetUnexpiredPiggybackMessages()
 
+			fmt.Println("Sender has messages: ", len(messagesToPiggyback))
+
 			pingMessageEnc, err := EncodePingMessage(messagesToPiggyback)
 
 			if err != nil {

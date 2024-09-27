@@ -38,6 +38,8 @@ func startServer(clientServerChan chan int) {
 
 		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
+		fmt.Println("Server has messages: ", len(messagesToPiggyback))
+
 		switch message.Kind {
 		case PING:
 			fmt.Println("Received PING: ", message)
@@ -50,7 +52,6 @@ func startServer(clientServerChan chan int) {
 			}
 
 			// Each PING contains multiple messages within it.
-			// TODO The same processing logic should be applied on ACK side.
 			for _, subMessage := range messages {
 				switch subMessage.Kind {
 				case HELLO:
@@ -136,7 +137,6 @@ func ProcessHelloMessage(message Message) error {
 }
 
 func ProcessFailOrLeaveMessage(message Message) error {
-
 	fmt.Println("Processing Fail/Leave Message: ", message)
 
 	// For the fail message, Data is expected to be the node Id.
