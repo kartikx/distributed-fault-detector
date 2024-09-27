@@ -38,14 +38,12 @@ func startSender() {
 			fmt.Println("Piggybacks were: ", piggybacks)
 
 			for index := 0; index < len(piggybacks); index++ {
-				ttl := piggybacks[index].ttl
-
-				if ttl > 0 {
+				if piggybacks[index].ttl > 0 {
 					messages = append(messages, piggybacks[index].message)
 					piggybacks[index].ttl--
 				}
 
-				if ttl <= 0 {
+				if piggybacks[index].ttl <= 0 {
 					piggybacks = append(piggybacks[:index], piggybacks[index+1:]...)
 					index--
 				}
