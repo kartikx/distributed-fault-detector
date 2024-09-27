@@ -40,6 +40,7 @@ func startServer(clientServerChan chan int) {
 
 		switch message.Kind {
 		case PING:
+			fmt.Println("Received PING: ", message)
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
