@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -63,6 +64,8 @@ func main() {
 			PrintPiggybackMessages()
 		case 'e':
 			ExitGroup()
+		case 's':
+			fmt.Println(localIP)
 		}
 	}
 }
