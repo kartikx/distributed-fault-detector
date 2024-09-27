@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -10,9 +11,11 @@ var NODE_ID = ""
 var isIntroducer = false
 
 func main() {
+	ch := make(chan int)
+
 	// Listener is started even before introduction so that the
-	// introducer can make a connection.
-	go startListener()
+	// introducer can make a connection to this node.
+	go startListener(ch)
 
 	// TODO write a logging abstraction to direct all logs into a file.
 	localIP, err := GetLocalIP()
@@ -42,26 +45,25 @@ func main() {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
+	ch <- 1
+	fmt.Println("Wrote to channel in main")
+
 	// Dial connection.
-	go startSender()
+	go startSender(ch)
 
 	var b []byte = make([]byte, 1)
 
-	go func() {
-		for {
-			os.Stdin.Read(b)
+	// TODO make this more elaborate and in-line with demo expectations.
+	for {
+		os.Stdin.Read(b)
 
-			switch b[0] {
-			case 'm':
-				PrintMembershipInfo()
-			case 'p':
-				PrintPiggybackMessages()
-			case 'e':
-				ExitGroup()
-			}
+		switch b[0] {
+		case 'm':
+			PrintMembershipInfo()
+		case 'p':
+			PrintPiggybackMessages()
+		case 'e':
+			ExitGroup()
 		}
-	}()
-
-	ch := make(chan int)
-	<-ch
+	}
 }

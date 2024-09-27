@@ -11,10 +11,13 @@ import (
 
 var piggybacks PiggybackMessages
 
-func startSender() {
-	// TODO I feel we should start this after introduction is complete and everything is stable.
-	// You can do this via a channel.
-	time.Sleep(5 * time.Second)
+func startSender(ch chan int) {
+
+	fmt.Println("Waiting on channel")
+	// Ensures that sending starts after listener has started and introduction has happened.
+	<-ch
+	<-ch
+	fmt.Println("Waited on channel")
 
 	for {
 		members := GetMembers()
@@ -24,8 +27,7 @@ func startSender() {
 			connection := GetNodeConnection(nodeId)
 
 			if connection == nil {
-				fmt.Println("===UNEXPECTED Connection is nil===")
-				time.Sleep(2 * time.Second)
+				fmt.Printf("Node %s connection is nil, it might have been removed from the group\n", nodeId)
 				continue
 			}
 
