@@ -20,6 +20,8 @@ func startSender() {
 		members := GetMembers()
 		Shuffle(members)
 
+		fmt.Println("Member list order: ", members)
+
 		for _, nodeId := range members {
 			connection := *membershipInfo[nodeId].connection
 
@@ -35,8 +37,6 @@ func startSender() {
 
 			// TODO This could go in a separate function.
 			// TODO This needs to be done on ACKs as well.
-			fmt.Println("Piggybacks were: ", piggybacks)
-
 			for index := 0; index < len(piggybacks); index++ {
 				if piggybacks[index].ttl > 0 {
 					messages = append(messages, piggybacks[index].message)
@@ -48,8 +48,6 @@ func startSender() {
 					index--
 				}
 			}
-
-			fmt.Println("Piggybacks are: ", piggybacks)
 
 			pingMessageEnc, err := GetEncodedPingMessage(messages)
 
