@@ -92,5 +92,30 @@ func startSender() {
 }
 
 func ExitGroup() {
-	// TODO implement.
+
+	fmt.Printf("Exiting gracefully %s\n", NODE_ID)
+
+	// Leave message just contains the NODE_ID
+	leaveMessage := Message{Kind: LEAVE, Data: NODE_ID}
+	leaveMessageEnc, err := json.Marshal(leaveMessage)
+	if err != nil {
+		fmt.Println("Unable to encode leave message")
+		continue
+	}
+
+	for _, nodeId := range membershipList {
+		
+		connection := *membershipInfo[nodeId].connection
+		if connection != nil {
+			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
+			connection.Write(leaveMessageEnc)
+			connection.Close()
+		}
+		
+	}
+
+	// TODO close the log file
+
+	os.Exit()
+
 }

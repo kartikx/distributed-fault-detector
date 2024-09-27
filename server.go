@@ -55,12 +55,12 @@ func startListener() {
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
-				case LEAVE:
-					ProcessLeaveMessage(subMessage)
 				case HELLO:
 					ProcessHelloMessage(subMessage)
+				case LEAVE:
+					ProcessFailOrLeaveMessage(subMessage)
 				case FAIL:
-					ProcessFailMessage(subMessage)
+					ProcessFailOrLeaveMessage(subMessage)
 				default:
 					log.Fatalf("Unexpected message kind")
 				}
@@ -138,20 +138,30 @@ func ProcessHelloMessage(message Message) error {
 	return nil
 }
 
-func ProcessFailMessage(message Message) {
-	fmt.Println("Received fail message: ", message)
+func ProcessFailOrLeaveMessage(message Message) {
 
-	// If you are the fail, just leave.
+	fmt.Println("Processing Fail/Leave Message: ", message)
 
-	// If you already knew, don't propagate.
+	// For the fail message, Data is expected to be the node Id.
+	nodeId := message.Data
 
-	// Else, assign and propagate.
-}
-
-func ProcessLeaveMessage(message Message) {
 	// If it's you, be very confused.
+	if nodeId == NODE_ID {
+		os.Exit()
+	}
 
-	// If you already knew, don't propagate.
+	_, ok := membershipInfo[nodeId]
 
-	// Else, assign and propagate.
+	if ok {		// node exists in membership info, remove and disseminate
+		fmt.Printf("Node %s exists in membership info, removing \n", nodeId)
+
+		delete(membershipInfo, nodeId)
+
+		// disseminating info that the node left
+		AddToPiggybacks(message, len(membershipInfo))
+
+		return nil
+	}
+
+	return nil
 }
