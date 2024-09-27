@@ -15,20 +15,14 @@ func startSender() {
 	time.Sleep(5 * time.Second)
 
 	for {
-		// TODO Make this asynchronous using a goroutine.
-
 		members := GetMembers()
 		Shuffle(members)
 
-		fmt.Println("Member list order: ", members)
-
 		for _, nodeId := range members {
-			connection := *membershipInfo[nodeId].connection
+			connection := GetNodeConnection(nodeId)
 
 			if connection == nil {
-				fmt.Println("Connection is nil")
-
-				// Perhaps connection is still being made. Sleep for some time.
+				fmt.Println("===UNEXPECTED Connection is nil===")
 				time.Sleep(2 * time.Second)
 				continue
 			}
