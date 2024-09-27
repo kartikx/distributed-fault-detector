@@ -78,7 +78,7 @@ func startSender() {
 
 				continue
 			} else {
-				// TODO Ack might have important information, process it.
+				// TODO Ack might have piggybacked information to be processed.
 				fmt.Println("ACK: ", nodeId)
 			}
 
