@@ -11,12 +11,16 @@ var piggybacks PiggybackMessages
 
 func startSender() {
 	// TODO I feel we should start this after introduction is complete and everything is stable.
+	// You can do this via a channel.
 	time.Sleep(5 * time.Second)
 
 	for {
 		// TODO Make this asynchronous using a goroutine.
-		for _, nodeId := range membershipList {
-			// TODO error check?
+
+		members := GetMembers()
+		Shuffle(members)
+
+		for _, nodeId := range members {
 			connection := *membershipInfo[nodeId].connection
 
 			if connection == nil {
@@ -29,10 +33,25 @@ func startSender() {
 
 			var messages Messages
 
-			for _, piggyback := range piggybacks {
-				// TODO check TTL of message.
-				messages = append(messages, piggyback.message)
+			// TODO This could go in a separate function.
+			// TODO This needs to be done on ACKs as well.
+			fmt.Println("Piggybacks were: ", piggybacks)
+
+			for index := 0; index < len(piggybacks); index++ {
+				ttl := piggybacks[index].ttl
+
+				if ttl > 0 {
+					messages = append(messages, piggybacks[index].message)
+					piggybacks[index].ttl--
+				}
+
+				if ttl <= 0 {
+					piggybacks = append(piggybacks[:index], piggybacks[index+1:]...)
+					index--
+				}
 			}
+
+			fmt.Println("Piggybacks are: ", piggybacks)
 
 			pingMessageEnc, err := GetEncodedPingMessage(messages)
 
@@ -55,26 +74,22 @@ func startSender() {
 				fmt.Println("Add failed message for: ", nodeId)
 
 				// Start propagating FAIL message.
-				// failedMessage := Message{
-				// 	Kind: FAIL,
-				// 	Data: nodeId,
-				// }
+				failedMessage := Message{
+					Kind: FAIL,
+					Data: nodeId,
+				}
 
-				// AddToPiggybacks(failedMessage, 1)
+				AddToPiggybacks(failedMessage, len(membershipInfo))
 
 				continue
 			} else {
 				// TODO Ack might have important information, process it.
 				fmt.Println("ACK: ", nodeId)
-
-				// TODO should I close this?
-				// defer connection.Close()
 			}
 
+			// TODO remove.
 			time.Sleep(PING_INTERVAL * time.Second)
 		}
-
-		// TODO shuffle list here.
 	}
 }
 

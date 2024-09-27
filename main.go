@@ -7,10 +7,6 @@ import (
 
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
 
-// Stores the identifiers, gets shuffled and round-robinned for pings.
-// TODO You could just as well use the keys on membershipInfo instead of having a second list. Can refactor later.
-var membershipList = []string{}
-
 var NODE_ID = ""
 
 var isIntroducer = false
@@ -43,7 +39,7 @@ func main() {
 			Data: NODE_ID,
 		}
 
-		AddToPiggybacks(helloMessage, len(membershipList))
+		AddToPiggybacks(helloMessage, len(membershipInfo))
 	} else {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
@@ -59,7 +55,6 @@ func main() {
 
 			switch b[0] {
 			case 'm':
-				PrintMembershipList()
 				PrintMembershipInfo()
 			case 'p':
 				PrintPiggybackMessages()

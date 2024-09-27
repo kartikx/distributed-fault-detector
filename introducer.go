@@ -78,7 +78,6 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 				host:       id,
 				failed:     false,
 			}
-			membershipList = append(membershipList, id)
 		} else if ip == localIP {
 			nodeId = id
 		} else {
@@ -95,8 +94,6 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 				host:       id,
 				failed:     false,
 			}
-
-			membershipList = append(membershipList, id)
 		}
 	}
 
@@ -115,12 +112,12 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 
 	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
 
-	AddNewMemberToMembershipList(nodeId)
+	AddNewMemberToMembershipInfo(nodeId)
+
+	members := GetMembers()
 
 	// For the response, add yourself to the list as well.
-	membershipListResponse := append(membershipList, NODE_ID)
-
-	AddNewMemberToMembershipInfo(nodeId)
+	membershipListResponse := append(members, NODE_ID)
 
 	membershipListEnc, err := json.Marshal(membershipListResponse)
 	if err != nil {

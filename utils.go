@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net"
 	"strings"
 	"time"
@@ -64,7 +65,7 @@ func GetEncodedAckMessage(messages Messages) ([]byte, error) {
 		return nil, err
 	}
 
-	ackMessage := Message{Kind: PING, Data: string(messagesEnc)}
+	ackMessage := Message{Kind: ACK, Data: string(messagesEnc)}
 
 	ackMessageEnc, err := json.Marshal(ackMessage)
 	if err != nil {
@@ -105,24 +106,11 @@ func PrintMembershipInfo() {
 	}
 }
 
-func PrintMembershipList() {
-	fmt.Println("====Membership List===")
-	for _, v := range membershipList {
-		fmt.Println(v)
-	}
-}
-
 func PrintPiggybackMessages() {
 	fmt.Println("Printing piggybacks")
 	for _, p := range piggybacks {
 		fmt.Println(p)
 	}
-}
-
-func AddNewMemberToMembershipList(nodeId string) error {
-	// TODO Thread Safety
-	membershipList = append(membershipList, nodeId)
-	return nil
 }
 
 func AddNewMemberToMembershipInfo(nodeId string) error {
@@ -141,4 +129,22 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 	}
 
 	return nil
+}
+
+// Returns the members in the group. Doesn't return failed members.
+func GetMembers() []string {
+	members := []string{}
+	for k, v := range membershipInfo {
+		if !v.failed {
+			members = append(members, k)
+		}
+	}
+	return members
+}
+
+func Shuffle(slice []string) {
+	for i := range slice {
+		j := rand.Intn(i + 1)
+		slice[i], slice[j] = slice[j], slice[i]
+	}
 }

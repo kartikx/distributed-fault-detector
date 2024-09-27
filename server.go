@@ -34,9 +34,6 @@ func startListener() {
 		json.Unmarshal(buf[:mlen], &message)
 		var responseMessage Message
 
-		fmt.Println("Server received message: ", message)
-		sendMessage := false
-
 		switch message.Kind {
 		case PING:
 			var messages Messages
@@ -58,9 +55,8 @@ func startListener() {
 					if err != nil {
 						log.Fatalf("Failed to process join message")
 					}
-					sendMessage = true
 				case LEAVE:
-					log.Fatalf("Unsupported")
+					ProcessLeaveMessage(subMessage)
 				case HELLO:
 					ProcessHelloMessage(subMessage)
 				case FAIL:
@@ -89,13 +85,9 @@ func startListener() {
 			continue
 		}
 
-		if sendMessage {
-			// fmt.Println(ackResponse)
-			// fmt.Println("Writing Response: ", string(ackResponse))
-			server.WriteToUDP(ackResponse, address)
-		} else {
-			fmt.Println("Not writing")
-		}
+		// fmt.Println(ackResponse)
+		// fmt.Println("Writing Response: ", string(ackResponse))
+		server.WriteToUDP(ackResponse, address)
 	}
 }
 
@@ -136,22 +128,30 @@ func ProcessHelloMessage(message Message) error {
 		return nil
 	}
 
-	// Add to membership list if not added already.
-	err := AddNewMemberToMembershipList(nodeId)
+	err := AddNewMemberToMembershipInfo(nodeId)
 	if err != nil {
 		return err
 	}
 
-	err = AddNewMemberToMembershipInfo(nodeId)
-	if err != nil {
-		return err
-	}
-
-	AddToPiggybacks(message, len(membershipList))
+	AddToPiggybacks(message, len(membershipInfo))
 
 	return nil
 }
 
 func ProcessFailMessage(message Message) {
 	fmt.Println("Received fail message: ", message)
+
+	// If you are the fail, just leave.
+
+	// If you already knew, don't propagate.
+
+	// Else, assign and propagate.
+}
+
+func ProcessLeaveMessage(message Message) {
+	// If it's you, be very confused.
+
+	// If you already knew, don't propagate.
+
+	// Else, assign and propagate.
 }
