@@ -86,3 +86,11 @@ func GetMemberInfo(nodeId string) (MemberInfo, bool) {
 
 	return member, ok
 }
+
+func DeleteMember(nodeId string) {
+	membershipInfoLock.Lock()
+	defer membershipInfoLock.Unlock()
+
+	// Deleting a non-existent entry is a no-op, so this operation is safe.
+	delete(membershipInfo, nodeId)
+}

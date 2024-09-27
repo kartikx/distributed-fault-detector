@@ -101,8 +101,7 @@ func ExitGroup() {
 
 	members := GetMembers()
 	for _, nodeId := range members {
-
-		connection := *membershipInfo[nodeId].connection
+		connection := GetNodeConnection(nodeId)
 		if connection != nil {
 			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
 			connection.Write(leaveMessageEnc)

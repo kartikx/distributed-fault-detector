@@ -153,12 +153,12 @@ func ProcessFailOrLeaveMessage(message Message) error {
 		os.Exit(0)
 	}
 
-	_, ok := membershipInfo[nodeId]
+	_, ok := GetMemberInfo(nodeId)
 
-	if ok {		// node exists in membership info, remove and disseminate
+	if ok { // node exists in membership info, remove and disseminate
 		fmt.Printf("Node %s exists in membership info, removing \n", nodeId)
 
-		delete(membershipInfo, nodeId)
+		DeleteMember(nodeId)
 
 		// disseminating info that the node left
 		AddToPiggybacks(message, len(membershipInfo))
