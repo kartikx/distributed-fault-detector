@@ -99,47 +99,11 @@ func GetDecodedSubMessages(messageEnc []byte) (Messages, error) {
 	return messages, nil
 }
 
-func PrintMembershipInfo() {
-	fmt.Println("====Membership Info===")
-	for k, v := range membershipInfo {
-		fmt.Println(k, v)
-	}
-}
-
 func PrintPiggybackMessages() {
 	fmt.Println("Printing piggybacks")
 	for _, p := range piggybacks {
 		fmt.Println(p)
 	}
-}
-
-func AddNewMemberToMembershipInfo(nodeId string) error {
-	ipAddr := GetIPFromID(nodeId)
-
-	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
-	if err != nil {
-		return err
-	}
-
-	// TODO Thread Safety
-	membershipInfo[nodeId] = MemberInfo{
-		connection: &conn,
-		host:       ipAddr,
-		failed:     false,
-	}
-
-	return nil
-}
-
-// Returns the members in the group. Doesn't return failed members.
-func GetMembers() []string {
-	members := []string{}
-	for k, v := range membershipInfo {
-		if !v.failed {
-			members = append(members, k)
-		}
-	}
-	return members
 }
 
 func Shuffle(slice []string) {

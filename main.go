@@ -5,8 +5,6 @@ import (
 	"os"
 )
 
-var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
-
 var NODE_ID = ""
 
 var isIntroducer = false

@@ -17,18 +17,14 @@ func startSender() {
 	time.Sleep(5 * time.Second)
 
 	for {
-		// TODO Make this asynchronous using a goroutine.
-
 		members := GetMembers()
 		Shuffle(members)
 
 		for _, nodeId := range members {
-			connection := *membershipInfo[nodeId].connection
+			connection := GetNodeConnection(nodeId)
 
 			if connection == nil {
-				fmt.Println("Connection is nil")
-
-				// Perhaps connection is still being made. Sleep for some time.
+				fmt.Println("===UNEXPECTED Connection is nil===")
 				time.Sleep(2 * time.Second)
 				continue
 			}
@@ -37,8 +33,6 @@ func startSender() {
 
 			// TODO This could go in a separate function.
 			// TODO This needs to be done on ACKs as well.
-			fmt.Println("Piggybacks were: ", piggybacks)
-
 			for index := 0; index < len(piggybacks); index++ {
 				if piggybacks[index].ttl > 0 {
 					messages = append(messages, piggybacks[index].message)
@@ -50,8 +44,6 @@ func startSender() {
 					index--
 				}
 			}
-
-			fmt.Println("Piggybacks are: ", piggybacks)
 
 			pingMessageEnc, err := GetEncodedPingMessage(messages)
 

@@ -72,12 +72,12 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 		ip := GetIPFromID(id)
 
 		if ip == INTRODUCER_SERVER_HOST {
-			// TODO this should be indexed thread-safe.
-			membershipInfo[id] = MemberInfo{
+			// TODO kartikr2 using pointers, ensure that it works fine.
+			AddToMembershipInfo(id, &MemberInfo{
 				connection: introducer_conn,
 				host:       id,
 				failed:     false,
-			}
+			})
 		} else if ip == localIP {
 			nodeId = id
 		} else {
@@ -88,12 +88,11 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 				// TODO what to do here? If it actually failed it should be detected by some other node.
 			}
 
-			// TODO this should be indexed thread-safe.
-			membershipInfo[id] = MemberInfo{
+			AddToMembershipInfo(id, &MemberInfo{
 				connection: &conn,
 				host:       id,
 				failed:     false,
-			}
+			})
 		}
 	}
 
