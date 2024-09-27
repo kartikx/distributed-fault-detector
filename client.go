@@ -65,7 +65,8 @@ func startSender() {
 			if err != nil {
 				fmt.Println("Add failed message for: ", nodeId)
 
-				// TODO @kartikr2 Remove entry from map.
+				// TODO in suspicion, you would want to suspect it first.
+				DeleteMember(nodeId)
 
 				// Start propagating FAIL message.
 				failedMessage := Message{
@@ -107,7 +108,6 @@ func ExitGroup() {
 			connection.Write(leaveMessageEnc)
 			connection.Close()
 		}
-
 	}
 
 	// TODO close the log file
