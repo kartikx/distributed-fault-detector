@@ -5,8 +5,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 	"os"
+	"time"
 )
 
 var piggybacks PiggybackMessages
@@ -73,6 +73,8 @@ func startSender() {
 			if err != nil {
 				fmt.Println("Add failed message for: ", nodeId)
 
+				// TODO @kartikr2 Remove entry from map.
+
 				// Start propagating FAIL message.
 				failedMessage := Message{
 					Kind: FAIL,
@@ -107,14 +109,14 @@ func ExitGroup() {
 
 	members := GetMembers()
 	for _, nodeId := range members {
-		
+
 		connection := *membershipInfo[nodeId].connection
 		if connection != nil {
 			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
 			connection.Write(leaveMessageEnc)
 			connection.Close()
 		}
-		
+
 	}
 
 	// TODO close the log file
