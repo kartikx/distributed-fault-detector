@@ -42,8 +42,9 @@ func GetServerEndpoint(host string) string {
 	return fmt.Sprintf("%s:%d", host, SERVER_PORT)
 }
 
-// Take a list of messages and encodes them into a PING.
-func GetEncodedPingMessage(messages Messages) ([]byte, error) {
+// Take a list of messages and encapsulates them into a PING message.
+// Returns the encoded message.
+func EncodePingMessage(messages Messages) ([]byte, error) {
 	messagesEnc, err := json.Marshal(messages)
 	if err != nil {
 		return nil, err
@@ -59,7 +60,9 @@ func GetEncodedPingMessage(messages Messages) ([]byte, error) {
 	return pingMessageEnc, nil
 }
 
-func GetEncodedAckMessage(messages Messages) ([]byte, error) {
+// Take a list of messages and encapsulates them into an ACK message.
+// Returns the encoded message.
+func EncodeAckMessage(messages Messages) ([]byte, error) {
 	messagesEnc, err := json.Marshal(messages)
 	if err != nil {
 		return nil, err
@@ -75,18 +78,17 @@ func GetEncodedAckMessage(messages Messages) ([]byte, error) {
 	return ackMessageEnc, nil
 }
 
-func AddToPiggybacks(message Message, ttl int) {
-	// TODO thread safety
-	piggybacks = append(piggybacks, PiggbackMessage{message, ttl})
-}
-
 // For a given message, returns the sub-messages present inside it.
-func GetDecodedSubMessages(messageEnc []byte) (Messages, error) {
+func DecodeAckMessage(messageEnc []byte) (Messages, error) {
 	var message Message
 
 	err := json.Unmarshal(messageEnc, &message)
 	if err != nil {
 		return nil, err
+	}
+
+	if message.Kind != ACK {
+		return nil, fmt.Errorf("Message kind is not ACK")
 	}
 
 	var messages Messages
@@ -97,13 +99,6 @@ func GetDecodedSubMessages(messageEnc []byte) (Messages, error) {
 	}
 
 	return messages, nil
-}
-
-func PrintPiggybackMessages() {
-	fmt.Println("Printing piggybacks")
-	for _, p := range piggybacks {
-		fmt.Println(p)
-	}
 }
 
 func Shuffle(slice []string) {

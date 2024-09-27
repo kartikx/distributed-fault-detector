@@ -3,16 +3,12 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"time"
 )
 
-var piggybacks PiggybackMessages
-
 func startClient(clientServerChan chan int) {
-
 	// Ensures that sending starts after listener has started and introduction is complete.
 	_, _ = <-clientServerChan, <-clientServerChan
 
@@ -28,23 +24,9 @@ func startClient(clientServerChan chan int) {
 				continue
 			}
 
-			var messages Messages
+			var messagesToPiggyback Messages = GetUnexpiredPiggybackMessages()
 
-			// TODO This could go in a separate function.
-			// TODO This needs to be done on ACKs as well.
-			for index := 0; index < len(piggybacks); index++ {
-				if piggybacks[index].ttl > 0 {
-					messages = append(messages, piggybacks[index].message)
-					piggybacks[index].ttl--
-				}
-
-				if piggybacks[index].ttl <= 0 {
-					piggybacks = append(piggybacks[:index], piggybacks[index+1:]...)
-					index--
-				}
-			}
-
-			pingMessageEnc, err := GetEncodedPingMessage(messages)
+			pingMessageEnc, err := EncodePingMessage(messagesToPiggyback)
 
 			if err != nil {
 				fmt.Println("Unable to encode ping message")
@@ -59,10 +41,10 @@ func startClient(clientServerChan chan int) {
 
 			// TODO would this work would even if I were to re-use the connection?
 			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_SECONDS * time.Second))
-			_, err = connection.Read(buffer)
+			mLen, err := connection.Read(buffer)
 
 			if err != nil {
-				fmt.Println("Add failed message for: ", nodeId)
+				fmt.Println("%s timed out", nodeId)
 
 				// TODO in suspicion, you would want to suspect it first.
 				DeleteMember(nodeId)
@@ -73,13 +55,15 @@ func startClient(clientServerChan chan int) {
 					Data: nodeId,
 				}
 
-				AddToPiggybacks(failedMessage, len(membershipInfo))
+				AddPiggybackMessage(failedMessage, len(membershipInfo))
 
 				continue
-			} else {
-				// TODO Ack might have piggybacked information to be processed.
-				fmt.Println("ACK: ", nodeId)
 			}
+			// TODO simulate drops on receiver end.
+
+			// TODO Ack might have piggybacked information to be processed.
+
+			fmt.Printf("Received ACK %s Response: [%s]", nodeId, buffer[:mLen])
 
 			// TODO remove.
 			time.Sleep(PING_INTERVAL * time.Second)
@@ -92,8 +76,8 @@ func ExitGroup() {
 	fmt.Printf("Exiting gracefully %s\n", NODE_ID)
 
 	// Leave message just contains the NODE_ID
-	leaveMessage := Message{Kind: LEAVE, Data: NODE_ID}
-	leaveMessageEnc, err := json.Marshal(leaveMessage)
+	leaveMessageEnc, err := GetEncodedLeaveMessage(NODE_ID)
+
 	if err != nil {
 		fmt.Println("Unable to encode leave message")
 		return

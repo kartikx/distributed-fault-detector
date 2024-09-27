@@ -13,24 +13,20 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 		return nil, nil, err
 	}
 
-	// TODO Node could create its own ID and pass it along in the Data.
-	joinMessage := Message{Kind: JOIN, Data: ""}
-
-	pingMessageEnc, err := GetEncodedPingMessage(Messages{joinMessage})
+	joinMessageEnc, err := GetEncodedJoinMessage()
 	if err != nil {
 		return nil, nil, err
 	}
 
-	conn.Write(pingMessageEnc)
+	conn.Write(joinMessageEnc)
 
 	buffer := make([]byte, 1024)
-	// fmt.Println("%s waiting for a response")
 	mLen, err := conn.Read(buffer)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	members, err := parseMembersFromResponse(buffer[:mLen])
+	members, err := parseMembersFromJoinResponse(buffer[:mLen])
 	if err != nil {
 		return nil, nil, err
 	}
@@ -40,10 +36,10 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 	return members, &conn, nil
 }
 
-func parseMembersFromResponse(buffer []byte) ([]string, error) {
+func parseMembersFromJoinResponse(buffer []byte) ([]string, error) {
 	// fmt.Println("JOIN Response: ", response)
 
-	messages, err := GetDecodedSubMessages(buffer)
+	messages, err := DecodeAckMessage(buffer)
 	if err != nil {
 		return nil, err
 	}

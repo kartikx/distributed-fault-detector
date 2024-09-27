@@ -1,6 +1,9 @@
 package main
 
-import "net"
+import (
+	"encoding/json"
+	"net"
+)
 
 const (
 	PING  MessageType = 0
@@ -33,3 +36,17 @@ type PiggbackMessage struct {
 }
 
 type PiggybackMessages []PiggbackMessage
+
+func GetEncodedJoinMessage() ([]byte, error) {
+	joinMessage := Message{Kind: JOIN, Data: ""}
+
+	joinMessageEnc, err := json.Marshal(joinMessage)
+
+	return joinMessageEnc, err
+}
+
+func GetEncodedLeaveMessage(nodeId string) ([]byte, error) {
+	leaveMessage := Message{Kind: LEAVE, Data: nodeId}
+	leaveMessageEnc, err := json.Marshal(leaveMessage)
+	return leaveMessageEnc, err
+}

@@ -10,7 +10,7 @@ import (
 // TODO Rename to use capital M after merge.
 var membershipInfo map[string]MemberInfo = make(map[string]MemberInfo)
 
-var membershipInfoLock = sync.RWMutex{}
+var membershipInfoMutex = sync.RWMutex{}
 
 func AddNewMemberToMembershipInfo(nodeId string) error {
 	ipAddr := GetIPFromID(nodeId)
@@ -20,8 +20,8 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 		return err
 	}
 
-	membershipInfoLock.Lock()
-	defer membershipInfoLock.Unlock()
+	membershipInfoMutex.Lock()
+	defer membershipInfoMutex.Unlock()
 
 	membershipInfo[nodeId] = MemberInfo{
 		connection: &conn,
@@ -36,8 +36,8 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 func GetMembers() []string {
 	members := []string{}
 
-	membershipInfoLock.RLock()
-	defer membershipInfoLock.RUnlock()
+	membershipInfoMutex.RLock()
+	defer membershipInfoMutex.RUnlock()
 
 	for k, v := range membershipInfo {
 		if !v.failed {
@@ -50,8 +50,8 @@ func GetMembers() []string {
 func PrintMembershipInfo() {
 	fmt.Println("====Membership Info===")
 
-	membershipInfoLock.RLock()
-	defer membershipInfoLock.RUnlock()
+	membershipInfoMutex.RLock()
+	defer membershipInfoMutex.RUnlock()
 
 	for k, v := range membershipInfo {
 		fmt.Println(k, v)
@@ -59,8 +59,8 @@ func PrintMembershipInfo() {
 }
 
 func GetNodeConnection(nodeId string) net.Conn {
-	membershipInfoLock.RLock()
-	defer membershipInfoLock.RUnlock()
+	membershipInfoMutex.RLock()
+	defer membershipInfoMutex.RUnlock()
 
 	conn := membershipInfo[nodeId].connection
 
@@ -72,15 +72,15 @@ func GetNodeConnection(nodeId string) net.Conn {
 }
 
 func AddToMembershipInfo(nodeId string, member *MemberInfo) {
-	membershipInfoLock.Lock()
-	defer membershipInfoLock.Unlock()
+	membershipInfoMutex.Lock()
+	defer membershipInfoMutex.Unlock()
 
 	membershipInfo[nodeId] = *member
 }
 
 func GetMemberInfo(nodeId string) (MemberInfo, bool) {
-	membershipInfoLock.RLock()
-	defer membershipInfoLock.RUnlock()
+	membershipInfoMutex.RLock()
+	defer membershipInfoMutex.RUnlock()
 
 	member, ok := membershipInfo[nodeId]
 
@@ -88,8 +88,8 @@ func GetMemberInfo(nodeId string) (MemberInfo, bool) {
 }
 
 func DeleteMember(nodeId string) {
-	membershipInfoLock.Lock()
-	defer membershipInfoLock.Unlock()
+	membershipInfoMutex.Lock()
+	defer membershipInfoMutex.Unlock()
 
 	// Deleting a non-existent entry is a no-op, so this operation is safe.
 	delete(membershipInfo, nodeId)

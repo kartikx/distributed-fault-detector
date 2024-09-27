@@ -35,7 +35,8 @@ func startServer(clientServerChan chan int) {
 
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
-		var responseMessage Message
+
+		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
 		switch message.Kind {
 		case PING:
@@ -48,16 +49,9 @@ func startServer(clientServerChan chan int) {
 			}
 
 			// Each PING contains multiple messages within it.
-			// TODO How do i handle multiple messages? For example, 2 joins, 1 LEAVE and 1 FAIL?
-			// TODO The same piggyback logic should be applied on ACK side.
+			// TODO The same processing logic should be applied on ACK side.
 			for _, subMessage := range messages {
 				switch subMessage.Kind {
-				case JOIN:
-					fmt.Println("submessage JOIN")
-					responseMessage, err = ProcessJoinMessage(subMessage, address)
-					if err != nil {
-						log.Fatalf("Failed to process join message")
-					}
 				case HELLO:
 					ProcessHelloMessage(subMessage)
 				case LEAVE:
@@ -68,30 +62,27 @@ func startServer(clientServerChan chan int) {
 					log.Fatalf("Unexpected message kind")
 				}
 			}
-
-			// Adding a random sleep to simulate failures.
-			// var sleepTime time.Duration = time.Duration(rand.Intn(10)) * time.Second
-
-			// if sleepTime > 8*time.Second {
-			// 	fmt.Println("SIMULATING FAILURE")
-			// }
-
-			// time.Sleep(sleepTime)
+		case JOIN:
+			fmt.Println("Received JOIN")
+			responseMessage, err := ProcessJoinMessage(message, address)
+			if err != nil {
+				log.Fatalf("Failed to process join message")
+			}
+			// Don't piggyback anything, just return the join response.
+			messagesToPiggyback = Messages{responseMessage}
 		case LEAVE:
 			ProcessFailOrLeaveMessage(message)
 		default:
 			log.Fatalf("Unexpected message kind")
 		}
 
-		ackResponse, err := GetEncodedAckMessage(Messages{responseMessage})
-
+		fmt.Println("Count of messages in ACK: ", len(messagesToPiggyback))
+		ackResponse, err := EncodeAckMessage(messagesToPiggyback)
 		if err != nil {
 			fmt.Println("Failed to generate response.")
 			continue
 		}
 
-		// fmt.Println(ackResponse)
-		// fmt.Println("Writing Response: ", string(ackResponse))
 		server.WriteToUDP(ackResponse, address)
 	}
 }
@@ -138,7 +129,7 @@ func ProcessHelloMessage(message Message) error {
 		return err
 	}
 
-	AddToPiggybacks(message, len(membershipInfo))
+	AddPiggybackMessage(message, len(membershipInfo))
 
 	return nil
 }
@@ -163,7 +154,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 		DeleteMember(nodeId)
 
 		// disseminating info that the node left
-		AddToPiggybacks(message, len(membershipInfo))
+		AddPiggybackMessage(message, len(membershipInfo))
 
 		return nil
 	}

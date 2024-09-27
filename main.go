@@ -40,7 +40,7 @@ func main() {
 			Data: NODE_ID,
 		}
 
-		AddToPiggybacks(helloMessage, len(membershipInfo))
+		AddPiggybackMessage(helloMessage, len(membershipInfo))
 	} else {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
