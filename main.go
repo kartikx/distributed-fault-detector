@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -11,13 +10,14 @@ var NODE_ID = ""
 var isIntroducer = false
 
 func main() {
-	ch := make(chan int, 5)
+	// Synchronizes start of client and server.
+	clientServerChan := make(chan int, 5)
 
 	// Listener is started even before introduction so that the
 	// introducer can make a connection to this node.
-	go startListener(ch)
+	go startServer(clientServerChan)
 
-	// TODO write a logging abstraction to direct all logs into a file.
+	// TODO @sdevata2 write a logging abstraction to direct all logs into a file.
 	localIP, err := GetLocalIP()
 	if err != nil {
 		log.Fatalf("Unable to get local IP")
@@ -45,11 +45,10 @@ func main() {
 		NODE_ID = ConstructNodeID(INTRODUCER_SERVER_HOST)
 	}
 
-	ch <- 1
-	fmt.Println("Wrote to channel in main")
+	clientServerChan <- 1
 
 	// Dial connection.
-	go startSender(ch)
+	go startClient(clientServerChan)
 
 	var b []byte = make([]byte, 1)
 

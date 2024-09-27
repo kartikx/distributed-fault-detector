@@ -11,13 +11,10 @@ import (
 
 var piggybacks PiggybackMessages
 
-func startSender(ch chan int) {
+func startClient(clientServerChan chan int) {
 
-	fmt.Println("Waiting on channel")
-	// Ensures that sending starts after listener has started and introduction has happened.
-	<-ch
-	<-ch
-	fmt.Println("Waited on channel")
+	// Ensures that sending starts after listener has started and introduction is complete.
+	_, _ = <-clientServerChan, <-clientServerChan
 
 	for {
 		members := GetMembers()

@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func startListener(ch chan int) {
+func startServer(clientServerChan chan int) {
 	addr := &net.UDPAddr{
 		IP:   net.ParseIP(SERVER_HOST),
 		Port: SERVER_PORT,
@@ -23,8 +23,7 @@ func startListener(ch chan int) {
 		log.Fatalf("Couldn't start server: %s", err.Error())
 	}
 
-	ch <- 1
-	fmt.Println("Wrote to channel")
+	clientServerChan <- 1
 
 	for {
 		buf := make([]byte, 1024)
