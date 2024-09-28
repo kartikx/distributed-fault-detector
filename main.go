@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"time"
 )
 
 var NODE_ID = ""
@@ -54,6 +56,16 @@ func main() {
 	go startClient(clientServerChan)
 
 	var b []byte = make([]byte, 1)
+
+	os_signals := make(chan os.Signal, 1)
+	signal.Notify(os_signals, os.Interrupt)
+	go func() {
+		for sig := range os_signals {
+			// sig is a ^C, handle it
+			fmt.Println("Application got an OS interrupt:", sig, "at", time.Now().Format(time.RFC3339))
+			os.Exit(0)
+		}
+	}()
 
 	// TODO make this more elaborate and in-line with demo expectations.
 	for {
