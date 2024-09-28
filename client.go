@@ -157,10 +157,12 @@ func ExitGroup() {
 
 func StartSuspecting() {
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "true"}
+	ProcessSuspectModeMessage(suspectMessage)
 	AddPiggybackMessage(suspectMessage, len(membershipInfo))
 }
 
 func StopSuspecting() {
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "false"}
+	ProcessSuspectModeMessage(suspectMessage)
 	AddPiggybackMessage(suspectMessage, len(membershipInfo))
 }
