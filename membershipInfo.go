@@ -93,6 +93,10 @@ func DeleteMember(nodeId string) {
 	membershipInfoMutex.Lock()
 	defer membershipInfoMutex.Unlock()
 
+	member := membershipInfo[nodeId]
+	member.failed = true
+	membershipInfo[nodeId] = member
+
 	// Deleting a non-existent entry is a no-op, so this operation is safe.
 	delete(membershipInfo, nodeId)
 }

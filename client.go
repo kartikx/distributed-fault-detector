@@ -60,8 +60,6 @@ func handleEachMember(nodeId string) {
 	mLen, err := connection.Read(buffer)
 
 	if err != nil {
-		fmt.Printf("%s timed out\n", nodeId)
-
 		// In suspicion, you would want to suspect it first.
 		if inSuspectMode {
 			// Create a SUSPECT message to process and disseminate
