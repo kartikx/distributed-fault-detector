@@ -45,7 +45,7 @@ func startServer(clientServerChan chan int) {
 
 		switch message.Kind {
 		case PING:
-			fmt.Println("Processing PING message", message)
+			printMessage("incoming", message, "")
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
@@ -74,25 +74,32 @@ func startServer(clientServerChan chan int) {
 				}
 			}
 		case JOIN:
-			fmt.Println("Received JOIN")
+			printMessage("incoming", message, "")
 			responseMessage, err := ProcessJoinMessage(message, address)
 			if err != nil {
-				log.Fatalf("Failed to process join message", message)
+				log.Fatalln("Failed to process join message", message)
 			}
 			// Don't piggyback anything, just return the join response.
 			messagesToPiggyback = Messages{responseMessage}
 		case LEAVE:
 			ProcessFailOrLeaveMessage(message)
 		default:
-			log.Fatalf("Unexpected message kind: ", message)
+			log.Fatalln("Unexpected message kind: ", message)
 		}
 
-		fmt.Println("Count of messages in ACK: ", len(messagesToPiggyback))
 		ackResponse, err := EncodeAckMessage(messagesToPiggyback)
 		if err != nil {
 			fmt.Println("Failed to generate response.")
 			continue
 		}
+
+		var ackMessage Message
+		err = json.Unmarshal(ackResponse, &ackMessage)
+		if err != nil {
+			fmt.Println("Unable to decode outgoing ACK message")
+			continue
+		}
+		printMessage("outgoing", message, "")
 
 		server.WriteToUDP(ackResponse, address)
 	}
@@ -111,19 +118,8 @@ func ProcessJoinMessage(message Message, addr *net.UDPAddr) (Message, error) {
 	}
 }
 
-func getPingResponse([]byte, error) string {
-	response := Message{
-		Kind: ACK,
-		Data: "",
-	}
-
-	responseEnc, _ := json.Marshal(response)
-
-	return string(responseEnc)
-}
-
 func ProcessHelloMessage(message Message) error {
-	fmt.Println("Processing Hello Message: ", message)
+	printMessage("incoming", message, "")
 
 	// For the hello message, nodeId is expected to be the node Id.
 	nodeId := message.Data
@@ -146,7 +142,7 @@ func ProcessHelloMessage(message Message) error {
 }
 
 func ProcessFailOrLeaveMessage(message Message) error {
-	fmt.Println("Processing Fail/Leave Message: ", message)
+	printMessage("incoming", message, "")
 
 	// For the fail message, Data is expected to be the node Id.
 	nodeId := message.Data
@@ -173,7 +169,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 }
 
 func ProcessSuspectMessage(message Message) error {
-	fmt.Println("Processing Suspect Message: ", message)
+	printMessage("incoming", message, "")
 
 	if !inSuspectMode {
 		fmt.Printf("Received a SUSPECT message when not in suspect mode")
@@ -235,7 +231,7 @@ func ProcessSuspectMessage(message Message) error {
 }
 
 func ProcessAliveMessage(message Message) error {
-	fmt.Println("Processing Alive Message: ", message)
+	printMessage("incoming", message, "")
 
 	if !inSuspectMode {
 		fmt.Printf("Received an ALIVE message when not in suspect mode")
@@ -274,7 +270,7 @@ func ProcessAliveMessage(message Message) error {
 }
 
 func ProcessSuspectModeMessage(message Message) error {
-	fmt.Println("Processing SUSPECT_MODE Message: ", message)
+	printMessage("incoming", message, "")
 
 	suspect_mode, err := strconv.ParseBool(message.Data)
 	if err != nil {

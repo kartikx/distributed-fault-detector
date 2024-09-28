@@ -3,6 +3,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -28,23 +29,26 @@ func startClient(clientServerChan chan int) {
 
 			var messagesToPiggyback Messages = GetUnexpiredPiggybackMessages()
 
-			// fmt.Println("Sender has messages: ", len(messagesToPiggyback))
-
 			pingMessageEnc, err := EncodePingMessage(messagesToPiggyback)
-
 			if err != nil {
 				fmt.Println("Unable to encode ping message")
 				continue
 			}
 
-			fmt.Printf("PINGING %s [%s]\n", nodeId, pingMessageEnc)
+			var pingMessage Message
+			err = json.Unmarshal(pingMessageEnc, &pingMessage)
+			if err != nil {
+				fmt.Println("Unable to decode outgoing PING message")
+				continue
+			}
+			printMessage("outgoing", pingMessage, nodeId)
 
 			connection.Write(pingMessageEnc)
 
 			buffer := make([]byte, 1024)
 
 			// TODO would this work would even if I were to re-use the connection?
-			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_SECONDS * time.Second))
+			connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_MILLISECONDS * time.Millisecond))
 			mLen, err := connection.Read(buffer)
 
 			if err != nil {
@@ -55,7 +59,7 @@ func startClient(clientServerChan chan int) {
 					// Create a SUSPECT message to process and disseminate
 					member, _ := GetMemberInfo(nodeId)
 					suspectMessage := Message{Kind: SUSPECT, Data: strconv.Itoa(member.incarnation) + "@" + nodeId}
-					fmt.Println("Creating a suspect message for:", nodeId, ":", suspectMessage)
+					printMessage("outgoing", suspectMessage, suspectMessage.Data)
 					go ProcessSuspectMessage(suspectMessage)
 
 					continue
@@ -76,15 +80,19 @@ func startClient(clientServerChan chan int) {
 			}
 			// TODO simulate drops on receiver end.
 
-			// TODO Process piggyback information.
-			fmt.Printf("Received ACK %s Response: [%s] \n", nodeId, buffer[:mLen])
-
 			messages, err := DecodeAckMessage(buffer[:mLen])
 			// fmt.Println("Messages in ACK: ", len(messages))
 			if err != nil {
 				fmt.Printf("Unable to decode ACK message from node: %s", nodeId)
 				continue
 			}
+
+			var ackMessage Message
+			err = json.Unmarshal(buffer[:mLen], &ackMessage)
+			if err != nil {
+				continue
+			}
+			printMessage("incoming", ackMessage, nodeId)
 
 			for _, subMessage := range messages {
 				switch subMessage.Kind {
@@ -106,7 +114,7 @@ func startClient(clientServerChan chan int) {
 			}
 
 			// TODO remove.
-			time.Sleep(PING_INTERVAL * time.Second)
+			time.Sleep(PING_INTERVAL_MILLISECONDS * time.Millisecond)
 		}
 	}
 }
@@ -128,6 +136,14 @@ func ExitGroup() {
 		connection := GetNodeConnection(nodeId)
 		if connection != nil {
 			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
+
+			var leaveMessage Message
+			err = json.Unmarshal(leaveMessageEnc, &leaveMessage)
+			if err != nil {
+				continue
+			}
+			printMessage("outgoing", leaveMessage, nodeId)
+
 			connection.Write(leaveMessageEnc)
 			connection.Close()
 		}

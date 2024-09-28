@@ -79,7 +79,9 @@ func main() {
 		case 'e':
 			ExitGroup()
 		case 's':
-			fmt.Println(localIP)
+			fmt.Printf("LocalIP: %s\n", localIP)
+			fmt.Printf("Incarnation: %d\n", INCARNATION)
+			fmt.Printf("InSuspectMode: %t\n", inSuspectMode)
 		case 'd':
 			StartSuspecting()
 		case 'n':

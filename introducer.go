@@ -18,6 +18,11 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 		return nil, nil, err
 	}
 
+	var joinMessage Message
+	_ = json.Unmarshal(joinMessageEnc, &joinMessage)
+	localIP, _ := GetLocalIP()
+	printMessage("outgoing", joinMessage, localIP)
+
 	conn.Write(joinMessageEnc)
 
 	buffer := make([]byte, 1024)
@@ -71,7 +76,7 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 			// TODO kartikr2 using pointers, ensure that it works fine.
 			AddToMembershipInfo(id, &MemberInfo{
 				connection: introducer_conn,
-				host:       id,
+				host:       ip,
 				failed:     false,
 			})
 		} else if ip == localIP {
@@ -86,7 +91,7 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 
 			AddToMembershipInfo(id, &MemberInfo{
 				connection: &conn,
-				host:       id,
+				host:       ip,
 				failed:     false,
 			})
 		}
