@@ -84,7 +84,7 @@ func handleEachMember(nodeId string) {
 
 			return
 		} else { // Otherwise, just mark the node as failed
-			fmt.Printf("Error in reading from connection for nodeId [%s] %s\n", nodeId, err.Error())
+			fmt.Printf("Error in reading from connection for nodeId [%s]\n", nodeId)
 
 			LogMessage(fmt.Sprintf("DETECTED NODE %s as FAILED", nodeId))
 			DeleteMember(nodeId)
