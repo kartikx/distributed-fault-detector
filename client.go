@@ -37,6 +37,7 @@ func handleEachMember(nodeId string) {
 
 	if connection == nil {
 		fmt.Printf("Node %s connection is nil, it might have been removed from the group\n", nodeId)
+		DeleteMember(nodeId)
 		return
 	}
 
@@ -58,7 +59,7 @@ func handleEachMember(nodeId string) {
 
 	connection.Write(pingMessageEnc)
 
-	buffer := make([]byte, 2048)
+	buffer := make([]byte, 4094)
 
 	randomFloat := rand.Float64()
 
