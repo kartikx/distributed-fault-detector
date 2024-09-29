@@ -39,7 +39,9 @@ func startServer(clientServerChan chan int) {
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
 
-		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
+		// var messagesToPiggyback = GetUnexpiredPiggybackMessages()
+		// TODO @kartikr2 Not piggybacking on ACK for now. It was causing issues in aligning membership lists.
+		var messagesToPiggyback Messages
 
 		// fmt.Println("Server has messages: ", len(messagesToPiggyback))
 

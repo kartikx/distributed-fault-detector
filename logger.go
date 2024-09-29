@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var log_file, _ = os.OpenFile("./machine.log", os.O_WRONLY|os.O_CREATE, 0666)
+var log_file, _ = os.OpenFile("./machine.log", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
 var log_file_writer = bufio.NewWriter(log_file)
 
 func PrintMessage(direction string, message Message, nodeId string) {
