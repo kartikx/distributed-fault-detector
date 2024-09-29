@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"strconv"
 	"time"
@@ -59,11 +60,13 @@ func handleEachMember(nodeId string) {
 
 	buffer := make([]byte, 1024)
 
+	randomFloat := rand.Float64()
+
 	// TODO would this work would even if I were to re-use the connection?
 	connection.SetReadDeadline(time.Now().Add(TIMEOUT_DETECTION_MILLISECONDS * time.Millisecond))
 	mLen, err := connection.Read(buffer)
 
-	if err != nil {
+	if err != nil || randomFloat < dropRate {
 		// In suspicion, you would want to suspect it first.
 		if inSuspectMode {
 			LogMessage(fmt.Sprintf("SUSPECT NODE %s", nodeId))
