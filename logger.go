@@ -14,10 +14,12 @@ var log_file, _ = os.OpenFile("./machine.log", os.O_WRONLY|os.O_CREATE, 0666)
 var log_file_writer = bufio.NewWriter(log_file)
 
 func PrintMessage(direction string, message Message, nodeId string) {
-	fmt.Fprintf(log_file_writer, "---------\nPrinting %s message\n%s\n", direction, time.Now())
+	// fmt.Fprintf(log_file_writer, "---------\nPrinting %s message\n%s\n", direction, time.Now())
+	currentTime := time.Now().Format(time.TimeOnly)
+
 	switch message.Kind {
 	case PING:
-		fmt.Fprintf(log_file_writer, "PING message (%s):\n", nodeId)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] PING message (%s):\n", currentTime, direction, nodeId)
 
 		var messages Messages
 		err := json.Unmarshal([]byte(message.Data), &messages)
@@ -32,7 +34,7 @@ func PrintMessage(direction string, message Message, nodeId string) {
 		}
 		fmt.Fprintf(log_file_writer, "Submessages ^^^^^\n")
 	case ACK:
-		fmt.Fprintf(log_file_writer, "ACK message (%s):\n", nodeId)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] ACK message (%s):\n", currentTime, direction, nodeId)
 
 		var messages Messages
 		err := json.Unmarshal([]byte(message.Data), &messages)
@@ -48,28 +50,28 @@ func PrintMessage(direction string, message Message, nodeId string) {
 		fmt.Fprintf(log_file_writer, "Submessages ^^^^^\n")
 
 	case JOIN:
-		fmt.Fprintf(log_file_writer, "JOIN message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] JOIN message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case LEAVE:
-		fmt.Fprintf(log_file_writer, "LEAVE message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] LEAVE message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case FAIL:
-		fmt.Fprintf(log_file_writer, "FAIL message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] FAIL message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case HELLO:
-		fmt.Fprintf(log_file_writer, "HELLO message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] HELLO message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case SUSPECT:
-		fmt.Fprintf(log_file_writer, "SUSPECT message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] SUSPECT message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case ALIVE:
-		fmt.Fprintf(log_file_writer, "ALIVE message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] ALIVE message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	case SUSPECT_MODE:
-		fmt.Fprintf(log_file_writer, "SUSPECT_MODE message with %s\n", message.Data)
+		fmt.Fprintf(log_file_writer, "[%s] [%s] [%s] SUSPECT_MODE message with %s\n", currentTime, direction, nodeId, message.Data)
 
 	default:
-		fmt.Fprintf(log_file_writer, "********Trying to print unknown message type**********")
+		fmt.Fprintf(log_file_writer, "[%s] [%s] ********Trying to print unknown message type**********", currentTime, direction)
 	}
 	fmt.Fprintf(log_file_writer, "---------\n")
 }

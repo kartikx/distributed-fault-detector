@@ -71,6 +71,7 @@ func handleEachMember(nodeId string) {
 
 			return
 		} else { // Otherwise, just mark the node as failed
+			LogMessage(fmt.Sprintf("DETECTED NODE %s as FAILED", nodeId))
 			DeleteMember(nodeId)
 
 			// Start propagating FAIL message.
