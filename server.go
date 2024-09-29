@@ -206,7 +206,7 @@ func ProcessSuspectMessage(message Message) error {
 
 		// If a node finds out that it is being suspected, it will increment incarnation and disseminate an ALIVE
 		INCARNATION += 1
-		aliveMessage := Message{Kind: ALIVE, Data: string(INCARNATION) + "@" + nodeId}
+		aliveMessage := Message{Kind: ALIVE, Data: strconv.Itoa(INCARNATION) + "@" + nodeId}
 		AddPiggybackMessage(aliveMessage)
 
 		return nil
