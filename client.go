@@ -17,9 +17,13 @@ func startClient(clientServerChan chan int) {
 
 	for {
 		members := GetMembers()
-		Shuffle(members)
+		var member_ids []string
+		for k := range members {
+			member_ids = append(member_ids, k)
+		}
+		Shuffle(member_ids)
 
-		for _, nodeId := range members {
+		for _, nodeId := range member_ids {
 			go handleEachMember(nodeId)
 			time.Sleep(PING_INTERVAL_MILLISECONDS * time.Millisecond)
 		}
@@ -146,7 +150,7 @@ func ExitGroup() {
 	}
 
 	members := GetMembers()
-	for _, nodeId := range members {
+	for nodeId := range members {
 		connection := GetNodeConnection(nodeId)
 		if connection != nil {
 			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
