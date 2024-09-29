@@ -39,7 +39,6 @@ func startServer(clientServerChan chan int) {
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
 
-		// TODO @kartikr2 Not piggybackking on ACK for now. It was causing issues in aligning membership lists.
 		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
 		// fmt.Println("Server has messages: ", len(messagesToPiggyback))
@@ -126,7 +125,7 @@ func ProcessHelloMessage(message Message) error {
 	_, ok := GetMemberInfo(nodeId)
 
 	if ok {
-		fmt.Printf("Node %s already exists in membership info with id, Skipping \n", nodeId)
+		fmt.Printf("Node %s already exists in membership info, Skipping \n", nodeId)
 		return nil
 	}
 
