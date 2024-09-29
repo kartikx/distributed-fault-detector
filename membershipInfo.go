@@ -15,6 +15,11 @@ var membershipInfoMutex = sync.RWMutex{}
 func AddNewMemberToMembershipInfo(nodeId string) error {
 	ipAddr := GetIPFromID(nodeId)
 
+	if nodeId == NODE_ID || ipAddr == LOCAL_IP {
+		fmt.Printf("Unexpected, attempt to add self. Don't do anything. %s %s %s %s\n", nodeId, NODE_ID, ipAddr, LOCAL_IP)
+		return nil
+	}
+
 	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
 	if err != nil {
 		return err

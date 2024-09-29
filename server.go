@@ -125,8 +125,13 @@ func ProcessHelloMessage(message Message) error {
 
 	_, ok := GetMemberInfo(nodeId)
 
-	if ok || nodeId == NODE_ID {
-		fmt.Printf("Node %s already exists in membership info, Skipping \n", nodeId)
+	if ok {
+		fmt.Printf("Node %s already exists in membership info with id, Skipping \n", nodeId)
+		return nil
+	}
+
+	if nodeId == NODE_ID {
+		fmt.Printf("Received self hello message for ID: %s Skip \n", nodeId)
 		return nil
 	}
 

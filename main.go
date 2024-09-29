@@ -9,6 +9,7 @@ import (
 )
 
 var NODE_ID = ""
+var LOCAL_IP = ""
 var INCARNATION = 0
 
 var inSuspectMode = false
@@ -23,12 +24,12 @@ func main() {
 	go startServer(clientServerChan)
 
 	// TODO @sdevata2 write a logging abstraction to direct all logs into a file.
-	localIP, err := GetLocalIP()
+	LOCAL_IP, err := GetLocalIP()
 	if err != nil {
 		log.Fatalf("Unable to get local IP")
 	}
 
-	if localIP == INTRODUCER_SERVER_HOST {
+	if LOCAL_IP == INTRODUCER_SERVER_HOST {
 		isIntroducer = true
 	}
 
@@ -38,7 +39,7 @@ func main() {
 			log.Fatalf("Unable to join the group: %s", err.Error())
 		}
 
-		NODE_ID = InitializeMembershipInfoAndList(members, introducer_conn, localIP)
+		NODE_ID = InitializeMembershipInfoAndList(members, introducer_conn, LOCAL_IP)
 
 		helloMessage := Message{
 			Kind: HELLO,
