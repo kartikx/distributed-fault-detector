@@ -79,7 +79,7 @@ func main() {
 		case 'e':
 			ExitGroup()
 		case 's':
-			fmt.Printf("LocalIP: %s\n", localIP)
+			fmt.Printf("ID: %s\n", NODE_ID)
 			fmt.Printf("Incarnation: %d\n", INCARNATION)
 			fmt.Printf("InSuspectMode: %t\n", inSuspectMode)
 		case 'd':
