@@ -20,7 +20,8 @@ func startClient(clientServerChan chan int) {
 		Shuffle(members)
 
 		for _, nodeId := range members {
-			go handleEachMember(nodeId)
+			// TODO @kartikr2 removed goroutine.
+			handleEachMember(nodeId)
 			time.Sleep(PING_INTERVAL_MILLISECONDS * time.Millisecond)
 		}
 	}
