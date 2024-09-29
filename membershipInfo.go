@@ -42,16 +42,14 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 }
 
 // Returns the members in the group. Doesn't return failed members.
-func GetMembers() []string {
-	members := []string{}
+func GetMembers() map[string]MemberInfo {
+	members := make(map[string]MemberInfo)
 
 	membershipInfoMutex.RLock()
 	defer membershipInfoMutex.RUnlock()
 
 	for k, v := range membershipInfo {
-		if !v.failed {
-			members = append(members, k)
-		}
+		members[k] = v
 	}
 	return members
 }

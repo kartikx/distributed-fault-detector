@@ -6,7 +6,7 @@ import (
 	"net"
 )
 
-func IntroduceYourself() ([]string, *net.Conn, error) {
+func IntroduceYourself() (map[string]MemberInfo, *net.Conn, error) {
 	fmt.Println("Introducing")
 	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST))
 	if err != nil {
@@ -41,7 +41,7 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 	return members, &conn, nil
 }
 
-func parseMembersFromJoinResponse(buffer []byte) ([]string, error) {
+func parseMembersFromJoinResponse(buffer []byte) (map[string]MemberInfo, error) {
 	// fmt.Println("JOIN Response: ", response)
 
 	messages, err := DecodeAckMessage(buffer)
@@ -53,12 +53,13 @@ func parseMembersFromJoinResponse(buffer []byte) ([]string, error) {
 		return nil, err
 	}
 
-	membersEnc := messages[0].Data
+	membersEnc := []byte(messages[0].Data)
 
-	var members []string
-	err = json.Unmarshal([]byte(membersEnc), &members)
+	var members map[string]MemberInfo
+	err = json.Unmarshal(membersEnc, &members)
 	if err != nil {
-		return nil, err
+		fmt.Println("Unable to decode returned members list")
+		return nil, nil
 	}
 
 	return members, err
@@ -66,18 +67,20 @@ func parseMembersFromJoinResponse(buffer []byte) ([]string, error) {
 
 // Initalizes the Membership Information map for the newly joined node.
 // Returns the NODE_ID for this node.
-func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn, localIP string) string {
+func InitializeMembershipInfoAndList(members map[string]MemberInfo, introducer_conn *net.Conn, localIP string) string {
 	nodeId := ""
 
-	for _, id := range members {
+	for id, memberInfo := range members {
 		ip := GetIPFromID(id)
 
 		if ip == INTRODUCER_SERVER_HOST {
 			// TODO kartikr2 using pointers, ensure that it works fine.
 			AddToMembershipInfo(id, &MemberInfo{
-				connection: introducer_conn,
-				host:       ip,
-				failed:     false,
+				connection:  introducer_conn,
+				host:        ip,
+				failed:      memberInfo.failed,
+				suspected:   memberInfo.suspected,
+				incarnation: memberInfo.incarnation,
 			})
 		} else if ip == localIP {
 			nodeId = id
@@ -90,9 +93,11 @@ func InitializeMembershipInfoAndList(members []string, introducer_conn *net.Conn
 			}
 
 			AddToMembershipInfo(id, &MemberInfo{
-				connection: &conn,
-				host:       ip,
-				failed:     false,
+				connection:  &conn,
+				host:        ip,
+				failed:      false,
+				suspected:   memberInfo.suspected,
+				incarnation: memberInfo.incarnation,
 			})
 		}
 	}
@@ -114,10 +119,16 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 
 	AddNewMemberToMembershipInfo(nodeId)
 
-	members := GetMembers()
+	membershipListResponse := GetMembers()
 
 	// For the response, add yourself to the list as well.
-	membershipListResponse := append(members, NODE_ID)
+	membershipListResponse[NODE_ID] = MemberInfo{
+		connection:  nil,
+		host:        NODE_ID,
+		failed:      false,
+		suspected:   false,
+		incarnation: INCARNATION,
+	}
 
 	membershipListEnc, err := json.Marshal(membershipListResponse)
 	if err != nil {
