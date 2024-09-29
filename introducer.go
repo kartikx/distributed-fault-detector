@@ -21,7 +21,7 @@ func IntroduceYourself() ([]string, *net.Conn, error) {
 	var joinMessage Message
 	_ = json.Unmarshal(joinMessageEnc, &joinMessage)
 	localIP, _ := GetLocalIP()
-	printMessage("outgoing", joinMessage, localIP)
+	PrintMessage("outgoing", joinMessage, localIP)
 
 	conn.Write(joinMessageEnc)
 

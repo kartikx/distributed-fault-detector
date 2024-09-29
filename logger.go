@@ -13,7 +13,7 @@ import (
 var log_file, _ = os.OpenFile("./machine.log", os.O_WRONLY|os.O_CREATE, 0666)
 var log_file_writer = bufio.NewWriter(log_file)
 
-func printMessage(direction string, message Message, nodeId string) {
+func PrintMessage(direction string, message Message, nodeId string) {
 	fmt.Fprintf(log_file_writer, "---------\nPrinting %s message\n%s\n", direction, time.Now())
 	switch message.Kind {
 	case PING:
@@ -28,7 +28,7 @@ func printMessage(direction string, message Message, nodeId string) {
 
 		fmt.Fprintf(log_file_writer, "Submessages vvvvv\n")
 		for _, subMessage := range messages {
-			printMessage(direction, subMessage, nodeId)
+			PrintMessage(direction, subMessage, nodeId)
 		}
 		fmt.Fprintf(log_file_writer, "Submessages ^^^^^\n")
 	case ACK:
@@ -43,7 +43,7 @@ func printMessage(direction string, message Message, nodeId string) {
 
 		fmt.Fprintf(log_file_writer, "Submessages vvvvv\n")
 		for _, subMessage := range messages {
-			printMessage(direction, subMessage, nodeId)
+			PrintMessage(direction, subMessage, nodeId)
 		}
 		fmt.Fprintf(log_file_writer, "Submessages ^^^^^\n")
 
@@ -72,4 +72,8 @@ func printMessage(direction string, message Message, nodeId string) {
 		fmt.Fprintf(log_file_writer, "********Trying to print unknown message type**********")
 	}
 	fmt.Fprintf(log_file_writer, "---------\n")
+}
+
+func LogMessage(message string) {
+	fmt.Fprintf(log_file_writer, "[%s] %s\n", time.Now().Format(time.TimeOnly), message)
 }

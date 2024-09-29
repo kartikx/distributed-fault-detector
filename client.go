@@ -49,7 +49,7 @@ func handleEachMember(nodeId string) {
 		fmt.Println("Unable to decode outgoing PING message")
 		return
 	}
-	printMessage("outgoing", pingMessage, nodeId)
+	PrintMessage("outgoing", pingMessage, nodeId)
 
 	connection.Write(pingMessageEnc)
 
@@ -62,15 +62,15 @@ func handleEachMember(nodeId string) {
 	if err != nil {
 		// In suspicion, you would want to suspect it first.
 		if inSuspectMode {
+			LogMessage(fmt.Sprintf("SUSPECT NODE %s", nodeId))
 			// Create a SUSPECT message to process and disseminate
 			member, _ := GetMemberInfo(nodeId)
 			suspectMessage := Message{Kind: SUSPECT, Data: strconv.Itoa(member.incarnation) + "@" + nodeId}
-			printMessage("outgoing", suspectMessage, suspectMessage.Data)
+			// PrintMessage("outgoing", suspectMessage, suspectMessage.Data)
 			go ProcessSuspectMessage(suspectMessage)
 
 			return
 		} else { // Otherwise, just mark the node as failed
-
 			DeleteMember(nodeId)
 
 			// Start propagating FAIL message.
@@ -98,7 +98,7 @@ func handleEachMember(nodeId string) {
 	if err != nil {
 		return
 	}
-	printMessage("incoming", ackMessage, nodeId)
+	PrintMessage("incoming", ackMessage, nodeId)
 
 	for _, subMessage := range messages {
 		switch subMessage.Kind {
@@ -122,7 +122,6 @@ func handleEachMember(nodeId string) {
 }
 
 func ExitGroup() {
-
 	fmt.Printf("Exiting gracefully %s\n", NODE_ID)
 
 	// Leave message just contains the NODE_ID
@@ -144,7 +143,7 @@ func ExitGroup() {
 			if err != nil {
 				continue
 			}
-			printMessage("outgoing", leaveMessage, nodeId)
+			PrintMessage("outgoing", leaveMessage, nodeId)
 
 			connection.Write(leaveMessageEnc)
 			connection.Close()

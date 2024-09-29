@@ -31,6 +31,8 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 		incarnation: 0,
 	}
 
+	LogMessage(fmt.Sprintf("JOIN NODE: %s", nodeId))
+
 	return nil
 }
 
@@ -78,6 +80,8 @@ func AddToMembershipInfo(nodeId string, member *MemberInfo) {
 	defer membershipInfoMutex.Unlock()
 
 	membershipInfo[nodeId] = *member
+
+	LogMessage(fmt.Sprintf("JOIN NODE: %s", nodeId))
 }
 
 func GetMemberInfo(nodeId string) (MemberInfo, bool) {
@@ -99,6 +103,8 @@ func DeleteMember(nodeId string) {
 
 	// Deleting a non-existent entry is a no-op, so this operation is safe.
 	delete(membershipInfo, nodeId)
+
+	LogMessage(fmt.Sprintf("DELETE NODE: %s", nodeId))
 }
 
 func UpdateMemberIncarnation(nodeId string, incarnation int) {
@@ -111,6 +117,8 @@ func UpdateMemberIncarnation(nodeId string, incarnation int) {
 		member.suspected = false
 	}
 	membershipInfo[nodeId] = member
+
+	LogMessage(fmt.Sprintf("UPDATE INCARNATION FOR NODE: %s", nodeId))
 }
 
 func MarkMemberSuspected(nodeId string) {
@@ -120,4 +128,6 @@ func MarkMemberSuspected(nodeId string) {
 	member := membershipInfo[nodeId]
 	member.suspected = true
 	membershipInfo[nodeId] = member
+
+	LogMessage(fmt.Sprintf("SUSPECT NODE: %s", nodeId))
 }

@@ -45,7 +45,7 @@ func startServer(clientServerChan chan int) {
 
 		switch message.Kind {
 		case PING:
-			printMessage("incoming", message, "")
+			PrintMessage("Incoming", message, "")
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
@@ -74,7 +74,7 @@ func startServer(clientServerChan chan int) {
 				}
 			}
 		case JOIN:
-			printMessage("incoming", message, "")
+			PrintMessage("Incoming", message, "")
 			responseMessage, err := ProcessJoinMessage(message, address)
 			if err != nil {
 				log.Fatalln("Failed to process join message", message)
@@ -99,7 +99,7 @@ func startServer(clientServerChan chan int) {
 			fmt.Println("Unable to decode outgoing ACK message")
 			continue
 		}
-		printMessage("outgoing", message, "")
+		PrintMessage("outgoing", message, "")
 
 		server.WriteToUDP(ackResponse, address)
 	}
@@ -119,7 +119,7 @@ func ProcessJoinMessage(message Message, addr *net.UDPAddr) (Message, error) {
 }
 
 func ProcessHelloMessage(message Message) error {
-	printMessage("incoming", message, "")
+	PrintMessage("incoming", message, "")
 
 	// For the hello message, nodeId is expected to be the node Id.
 	nodeId := message.Data
@@ -142,7 +142,7 @@ func ProcessHelloMessage(message Message) error {
 }
 
 func ProcessFailOrLeaveMessage(message Message) error {
-	printMessage("incoming", message, "")
+	PrintMessage("incoming", message, "")
 
 	// For the fail message, Data is expected to be the node Id.
 	nodeId := message.Data
@@ -169,7 +169,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 }
 
 func ProcessSuspectMessage(message Message) error {
-	printMessage("incoming", message, "")
+	PrintMessage("incoming", message, "")
 
 	if !inSuspectMode {
 		fmt.Printf("Received a SUSPECT message when not in suspect mode")
@@ -231,7 +231,7 @@ func ProcessSuspectMessage(message Message) error {
 }
 
 func ProcessAliveMessage(message Message) error {
-	printMessage("incoming", message, "")
+	PrintMessage("incoming", message, "")
 
 	if !inSuspectMode {
 		fmt.Printf("Received an ALIVE message when not in suspect mode")
@@ -270,7 +270,7 @@ func ProcessAliveMessage(message Message) error {
 }
 
 func ProcessSuspectModeMessage(message Message) error {
-	printMessage("incoming", message, "")
+	PrintMessage("incoming", message, "")
 
 	suspect_mode, err := strconv.ParseBool(message.Data)
 	if err != nil {
