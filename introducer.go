@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"strconv"
+	"strings"
 )
 
 func IntroduceYourself() (map[string]MemberInfo, *net.Conn, error) {
@@ -54,8 +55,17 @@ func parseMembersFromJoinResponse(buffer []byte) (map[string]MemberInfo, error) 
 		return nil, err
 	}
 
-	membersEnc := []byte(messages[0].Data)                   // First message is a "JOIN" with membership info
-	inSuspectMode, err = strconv.ParseBool(messages[1].Data) // Second piggyback message is a "SUSPECT_MODE"
+	membersEnc := []byte(messages[0].Data)                 // First message is a "JOIN" with membership info
+	inSuspectMode, _ = strconv.ParseBool(messages[1].Data) // Second piggyback message is a "SUSPECT_MODE"
+
+	dropoutRateValue := strings.Split(messages[2].Data, " ")[1] // Third piggyback message is a "DROPOUT"
+	dropoutRate, _ := strconv.ParseFloat(strings.TrimSpace(dropoutRateValue), 64)
+	if err != nil {
+		dropRate = 0.0
+	} else {
+		dropRate = dropoutRate
+	}
+
 	if err != nil {
 		fmt.Println("Unable to decode the initial suspect state")
 	}

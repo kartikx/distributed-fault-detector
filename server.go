@@ -81,9 +81,13 @@ func startServer(clientServerChan chan int) {
 			if err != nil {
 				log.Fatalln("Failed to process join message", message)
 			}
-			// Don't piggyback anything, just return the join response.
+			// Piggyback the JOIN, SUSPECT_MODE, and DROPOUT_MODE messages
 			suspectMessage := Message{Kind: SUSPECT_MODE, Data: strconv.FormatBool(inSuspectMode)}
-			messagesToPiggyback = Messages{responseMessage, suspectMessage}
+
+			dropRateString := fmt.Sprintf("dropout %f", dropRate)
+			dropoutMessage := Message{Kind: DROPOUT, Data: "dropout " + string(dropRateString)}
+
+			messagesToPiggyback = Messages{responseMessage, suspectMessage, dropoutMessage}
 		case LEAVE:
 			ProcessFailOrLeaveMessage(message)
 		default:
