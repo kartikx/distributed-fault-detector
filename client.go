@@ -103,6 +103,16 @@ func handleEachMember(nodeId string) {
 	}
 	PrintMessage("incoming", ackMessage, nodeId)
 
+	if inSuspectMode {
+		// if you are suspecting the node, mark it as alive since you got an ACK
+		member, _ := GetMemberInfo(nodeId)
+		if member.suspected {
+			aliveMessage := Message{Kind: ALIVE, Data: string(member.incarnation) + "@" + nodeId}
+			ProcessAliveMessage(aliveMessage)
+			AddPiggybackMessage(aliveMessage, len(membershipInfo))
+		}
+	}
+
 	for _, subMessage := range messages {
 		switch subMessage.Kind {
 		case HELLO:
