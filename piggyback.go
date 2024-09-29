@@ -23,7 +23,7 @@ func AddPiggybackMessage(message Message) {
 	piggybacksLock.Lock()
 	defer piggybacksLock.Unlock()
 
-	piggybacks = append(piggybacks, PiggbackMessage{message, 2 * len(membershipInfo)})
+	piggybacks = append(piggybacks, PiggbackMessage{message, PIGGYBACK_TTL})
 }
 
 // Returns messages from Piggyback that aren't expired.

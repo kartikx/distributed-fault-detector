@@ -58,7 +58,7 @@ func handleEachMember(nodeId string) {
 
 	connection.Write(pingMessageEnc)
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 2048)
 
 	randomFloat := rand.Float64()
 

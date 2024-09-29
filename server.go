@@ -29,7 +29,7 @@ func startServer(clientServerChan chan int) {
 	clientServerChan <- 1
 
 	for {
-		buf := make([]byte, 1024)
+		buf := make([]byte, 2048)
 		mlen, address, err := server.ReadFromUDP(buf)
 
 		if err != nil {
