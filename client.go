@@ -82,7 +82,7 @@ func handleEachMember(nodeId string) {
 				Data: nodeId,
 			}
 
-			AddPiggybackMessage(failedMessage, len(membershipInfo))
+			AddPiggybackMessage(failedMessage)
 
 			return
 		}
@@ -162,11 +162,11 @@ func ExitGroup() {
 func StartSuspecting() {
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "true"}
 	ProcessSuspectModeMessage(suspectMessage)
-	AddPiggybackMessage(suspectMessage, len(membershipInfo))
+	AddPiggybackMessage(suspectMessage)
 }
 
 func StopSuspecting() {
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "false"}
 	ProcessSuspectModeMessage(suspectMessage)
-	AddPiggybackMessage(suspectMessage, len(membershipInfo))
+	AddPiggybackMessage(suspectMessage)
 }

@@ -39,9 +39,8 @@ func startServer(clientServerChan chan int) {
 		var message Message
 		json.Unmarshal(buf[:mlen], &message)
 
-		// var messagesToPiggyback = GetUnexpiredPiggybackMessages()
-		// TODO @kartikr2 Not piggybacking on ACK for now. It was causing issues in aligning membership lists.
-		var messagesToPiggyback Messages
+		// TODO @kartikr2 Not piggybackking on ACK for now. It was causing issues in aligning membership lists.
+		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
 		// fmt.Println("Server has messages: ", len(messagesToPiggyback))
 
@@ -136,7 +135,7 @@ func ProcessHelloMessage(message Message) error {
 		return err
 	}
 
-	AddPiggybackMessage(message, len(membershipInfo))
+	AddPiggybackMessage(message)
 
 	return nil
 }
@@ -161,7 +160,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 		DeleteMember(nodeId)
 
 		// disseminating info that the node left
-		AddPiggybackMessage(message, len(membershipInfo))
+		AddPiggybackMessage(message)
 
 		return nil
 	}
@@ -197,7 +196,7 @@ func ProcessSuspectMessage(message Message) error {
 		// If a node finds out that it is being suspected, it will increment incarnation and disseminate an ALIVE
 		INCARNATION += 1
 		aliveMessage := Message{Kind: ALIVE, Data: string(INCARNATION) + "@" + nodeId}
-		AddPiggybackMessage(aliveMessage, len(membershipInfo))
+		AddPiggybackMessage(aliveMessage)
 
 		return nil
 	} else {
@@ -212,7 +211,7 @@ func ProcessSuspectMessage(message Message) error {
 		MarkMemberSuspected(nodeId)
 
 		// Disseminate the SUSPECT message that you got
-		AddPiggybackMessage(message, len(membershipInfo))
+		AddPiggybackMessage(message)
 
 		// Wait for suspect timeout
 		time.Sleep(time.Second * SUSPECT_TIMEOUT)
@@ -261,7 +260,7 @@ func ProcessAliveMessage(message Message) error {
 		}
 
 		// Disseminate the ALIVE message that you got
-		AddPiggybackMessage(message, len(membershipInfo))
+		AddPiggybackMessage(message)
 
 		// Update the incarnation number and not suspected
 		UpdateMemberIncarnation(nodeId, message_incarnation)
@@ -281,7 +280,7 @@ func ProcessSuspectModeMessage(message Message) error {
 
 	if suspect_mode != inSuspectMode {
 		inSuspectMode = suspect_mode
-		AddPiggybackMessage(message, len(membershipInfo))
+		AddPiggybackMessage(message)
 		return nil
 	}
 	return nil

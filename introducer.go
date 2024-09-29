@@ -136,7 +136,7 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 		Data: nodeId,
 	}
 
-	AddPiggybackMessage(helloMessage, len(membershipInfo))
+	AddPiggybackMessage(helloMessage)
 
 	return response, err
 }
