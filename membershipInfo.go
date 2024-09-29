@@ -20,6 +20,8 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 		return nil
 	}
 
+	fmt.Printf("Adding new member to info %s %s %s %s\n", nodeId, NODE_ID, ipAddr, LOCAL_IP)
+
 	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
 	if err != nil {
 		return err

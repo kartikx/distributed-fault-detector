@@ -100,7 +100,7 @@ func InitializeMembershipInfoAndList(members map[string]MemberInfo, introducer_c
 			AddToMembershipInfo(id, &MemberInfo{
 				connection:  &conn,
 				host:        ip,
-				failed:      false,
+				failed:      memberInfo.failed,
 				suspected:   memberInfo.suspected,
 				incarnation: memberInfo.incarnation,
 			})
