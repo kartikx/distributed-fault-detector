@@ -146,13 +146,13 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 		Data: string(membershipListEnc),
 	}
 
-	// Introducer should also disseminate the message.
-	helloMessage := Message{
-		Kind: HELLO,
-		Data: nodeId,
-	}
+	// // Introducer should also disseminate the message.
+	// helloMessage := Message{
+	// 	Kind: HELLO,
+	// 	Data: nodeId,
+	// }
 
-	AddPiggybackMessage(helloMessage)
+	// AddPiggybackMessage(helloMessage)
 
 	return response, err
 }
