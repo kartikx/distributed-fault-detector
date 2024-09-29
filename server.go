@@ -196,12 +196,6 @@ func ProcessSuspectMessage(message Message) error {
 	}
 	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
 
-	_, ok := GetMemberInfo(nodeId)
-	if !ok {
-		fmt.Printf("Got a SUSPECT message for a removed node")
-		return nil
-	}
-
 	if nodeId == NODE_ID {
 
 		// If the self SUSPECT message is for an old self, ignore since the node already disseminated ALIVE
@@ -217,6 +211,12 @@ func ProcessSuspectMessage(message Message) error {
 
 		return nil
 	} else {
+
+		_, ok := GetMemberInfo(nodeId)
+		if !ok {
+			fmt.Printf("Got a SUSPECT message for a removed node")
+			return nil
+		}
 
 		// Check the message incarnation
 		membershipInfoEntry, _ := GetMemberInfo(nodeId)
