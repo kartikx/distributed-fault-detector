@@ -114,8 +114,6 @@ func ProcessJoinMessage(message Message, addr *net.UDPAddr) (Message, error) {
 		joinResponse, err := IntroduceNodeToGroup(message.Data, addr)
 		return joinResponse, err
 	} else {
-		// You should simply add this node to your list, if it does not exist already,
-		// or if you ain't it.
 		return Message{}, fmt.Errorf("Unexpected JOIN message received for non Introducer node")
 	}
 }
@@ -151,6 +149,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 
 	// If it's you, be very confused.
 	if nodeId == NODE_ID {
+		fmt.Println("Received self failure message.")
 		os.Exit(0)
 	}
 
