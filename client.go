@@ -113,7 +113,7 @@ func handleEachMember(nodeId string) {
 		if member.suspected {
 			aliveMessage := Message{Kind: ALIVE, Data: string(member.incarnation) + "@" + nodeId}
 			ProcessAliveMessage(aliveMessage)
-			AddPiggybackMessage(aliveMessage, len(membershipInfo))
+			AddPiggybackMessage(aliveMessage)
 		}
 	}
 
