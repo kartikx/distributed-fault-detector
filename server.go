@@ -80,7 +80,8 @@ func startServer(clientServerChan chan int) {
 				log.Fatalln("Failed to process join message", message)
 			}
 			// Don't piggyback anything, just return the join response.
-			messagesToPiggyback = Messages{responseMessage}
+			suspectMessage := Message{Kind: SUSPECT_MODE, Data: strconv.FormatBool(inSuspectMode)}
+			messagesToPiggyback = Messages{responseMessage, suspectMessage}
 		case LEAVE:
 			ProcessFailOrLeaveMessage(message)
 		default:
@@ -125,7 +126,7 @@ func ProcessHelloMessage(message Message) error {
 	_, ok := GetMemberInfo(nodeId)
 
 	if ok {
-		fmt.Printf("Node %s already exists in membership info, Skipping \n", nodeId)
+		fmt.Printf("Node %s already exists in membership info, Skipping HELLO \n", nodeId)
 		return nil
 	}
 
@@ -159,7 +160,7 @@ func ProcessFailOrLeaveMessage(message Message) error {
 	_, ok := GetMemberInfo(nodeId)
 
 	if ok { // node exists in membership info, remove and disseminate
-		fmt.Printf("Node %s exists in membership info, removing \n", nodeId)
+		fmt.Printf("Node %s exists in membership info, removing in FAIL/LEAVE \n", nodeId)
 
 		DeleteMember(nodeId)
 
@@ -188,6 +189,12 @@ func ProcessSuspectMessage(message Message) error {
 		return nil
 	}
 	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
+
+	_, ok := GetMemberInfo(nodeId)
+	if !ok {
+		fmt.Printf("Got a SUSPECT message for a removed node")
+		return nil
+	}
 
 	if nodeId == NODE_ID {
 

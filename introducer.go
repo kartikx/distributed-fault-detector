@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"strconv"
 )
 
 func IntroduceYourself() (map[string]MemberInfo, *net.Conn, error) {
@@ -53,7 +54,11 @@ func parseMembersFromJoinResponse(buffer []byte) (map[string]MemberInfo, error) 
 		return nil, err
 	}
 
-	membersEnc := []byte(messages[0].Data)
+	membersEnc := []byte(messages[0].Data)                   // First message is a "JOIN" with membership info
+	inSuspectMode, err = strconv.ParseBool(messages[1].Data) // Second piggyback message is a "SUSPECT_MODE"
+	if err != nil {
+		fmt.Println("Unable to decode the initial suspect state")
+	}
 
 	var members map[string]MemberInfo
 	err = json.Unmarshal(membersEnc, &members)
