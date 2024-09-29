@@ -17,6 +17,7 @@ const (
 	SUSPECT      MessageType = 6
 	ALIVE        MessageType = 7
 	SUSPECT_MODE MessageType = 8
+	DROPOUT      MessageType = 9
 )
 
 type MemberInfo struct {

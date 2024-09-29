@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 )
 
@@ -14,6 +16,7 @@ var INCARNATION = 0
 
 var inSuspectMode = false
 var isIntroducer = false
+var dropRate = 0.0
 
 func main() {
 	// Synchronizes start of client and server.
@@ -56,8 +59,6 @@ func main() {
 	// Dial connection.
 	go startClient(clientServerChan)
 
-	var b []byte = make([]byte, 1)
-
 	os_signals := make(chan os.Signal, 1)
 	signal.Notify(os_signals, os.Interrupt)
 	go func() {
@@ -70,23 +71,30 @@ func main() {
 
 	// TODO make this more elaborate and in-line with demo expectations.
 	for {
-		os.Stdin.Read(b)
+		var demoInstruction string
+		scanner := bufio.NewScanner(os.Stdin)
+		if scanner.Scan() {
+			demoInstruction = scanner.Text()
+		}
 
-		switch b[0] {
-		case 'm':
+		switch {
+		case strings.Contains(demoInstruction, "allmems"):
 			PrintMembershipInfo()
-		case 'p':
+		case strings.Contains(demoInstruction, "piggybacks"):
 			PrintPiggybackMessages()
-		case 'e':
+		case strings.Contains(demoInstruction, "leave"):
 			ExitGroup()
-		case 's':
+		case strings.Contains(demoInstruction, "status"):
 			fmt.Printf("ID: %s\n", NODE_ID)
 			fmt.Printf("Incarnation: %d\n", INCARNATION)
 			fmt.Printf("InSuspectMode: %t\n", inSuspectMode)
-		case 'd':
+			fmt.Printf("Dropout: %f\n", dropRate)
+		case strings.Contains(demoInstruction, "startsus"):
 			StartSuspecting()
-		case 'n':
+		case strings.Contains(demoInstruction, "stopsus"):
 			StopSuspecting()
+		case strings.Contains(demoInstruction, "dropout"):
+			SetDropout(demoInstruction)
 		}
 	}
 }

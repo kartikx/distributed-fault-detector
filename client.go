@@ -131,6 +131,8 @@ func handleEachMember(nodeId string) {
 			ProcessAliveMessage(subMessage)
 		case SUSPECT_MODE:
 			ProcessSuspectModeMessage(subMessage)
+		case DROPOUT:
+			ProcessDropoutMessage(subMessage)
 		default:
 			log.Fatalf("Unexpected submessage kind in ACK")
 		}
@@ -183,4 +185,10 @@ func StopSuspecting() {
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "false"}
 	ProcessSuspectModeMessage(suspectMessage)
 	AddPiggybackMessage(suspectMessage)
+}
+
+func SetDropout(dropoutCommand string) {
+	dropoutMessage := Message{Kind: DROPOUT, Data: dropoutCommand}
+	ProcessDropoutMessage(dropoutMessage)
+	AddPiggybackMessage(dropoutMessage)
 }

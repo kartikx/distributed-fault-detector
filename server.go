@@ -69,6 +69,8 @@ func startServer(clientServerChan chan int) {
 					ProcessAliveMessage(subMessage)
 				case SUSPECT_MODE:
 					ProcessSuspectModeMessage(subMessage)
+				case DROPOUT:
+					ProcessDropoutMessage(subMessage)
 				default:
 					log.Fatalf("Unexpected submessage kind in PING")
 				}
@@ -294,5 +296,20 @@ func ProcessSuspectModeMessage(message Message) error {
 		AddPiggybackMessage(message)
 		return nil
 	}
+	return nil
+}
+
+func ProcessDropoutMessage(message Message) error {
+	PrintMessage("incoming", message, "")
+
+	dropoutRateValue := strings.Split(message.Data, " ")[1]
+
+	dropoutRate, err := strconv.ParseFloat(strings.TrimSpace(dropoutRateValue), 64)
+	if err != nil {
+		fmt.Printf("Was not able to parse DROPOUT message")
+		return fmt.Errorf("Was not able to parse DROPOUT message")
+	}
+	dropRate = dropoutRate
+
 	return nil
 }
