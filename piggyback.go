@@ -33,10 +33,12 @@ func GetUnexpiredPiggybackMessages() Messages {
 	piggybacksLock.Lock()
 	defer piggybacksLock.Unlock()
 
-	for index := 0; index < len(piggybacks); index++ {
+	addedPiggybacks := 0
+	for index := 0; (index < len(piggybacks)) && (addedPiggybacks < 5); index++ { // Piggyback only 4 messages at max
 		if piggybacks[index].ttl > 0 {
 			messages = append(messages, piggybacks[index].message)
 			piggybacks[index].ttl--
+			addedPiggybacks += 1
 		}
 
 		if piggybacks[index].ttl <= 0 {
