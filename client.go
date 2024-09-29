@@ -114,7 +114,7 @@ func handleEachMember(nodeId string) {
 		// if you are suspecting the node, mark it as alive since you got an ACK
 		member, _ := GetMemberInfo(nodeId)
 		if member.suspected {
-			aliveMessage := Message{Kind: ALIVE, Data: string(member.incarnation) + "@" + nodeId}
+			aliveMessage := Message{Kind: ALIVE, Data: strconv.Itoa(member.incarnation) + "@" + nodeId}
 			ProcessAliveMessage(aliveMessage)
 			AddPiggybackMessage(aliveMessage)
 		}
