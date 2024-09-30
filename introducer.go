@@ -9,7 +9,6 @@ import (
 )
 
 func IntroduceYourself() (map[string]MemberInfo, *net.Conn, error) {
-	fmt.Println("Introducing")
 	conn, err := net.Dial("udp", GetServerEndpoint(INTRODUCER_SERVER_HOST))
 	if err != nil {
 		return nil, nil, err
@@ -38,14 +37,12 @@ func IntroduceYourself() (map[string]MemberInfo, *net.Conn, error) {
 		return nil, nil, err
 	}
 
-	fmt.Println("Received members: ", members)
+	LogMessage(fmt.Sprintf("Received members: ", members))
 
 	return members, &conn, nil
 }
 
 func parseMembersFromJoinResponse(buffer []byte) (map[string]MemberInfo, error) {
-	// fmt.Println("JOIN Response: ", response)
-
 	messages, err := DecodeAckMessage(buffer)
 	if err != nil {
 		return nil, err
@@ -67,13 +64,13 @@ func parseMembersFromJoinResponse(buffer []byte) (map[string]MemberInfo, error) 
 	}
 
 	if err != nil {
-		fmt.Println("Unable to decode the initial suspect state")
+		LogError("Unable to decode the initial suspect state")
 	}
 
 	var members map[string]MemberInfo
 	err = json.Unmarshal(membersEnc, &members)
 	if err != nil {
-		fmt.Println("Unable to decode returned members list")
+		LogError("Unable to decode returned members list")
 		return nil, nil
 	}
 
@@ -103,7 +100,7 @@ func InitializeMembershipInfoAndList(members map[string]MemberInfo, introducer_c
 			conn, err := net.Dial("udp", GetServerEndpoint(ip))
 
 			if err != nil {
-				fmt.Println("Failed to estabilish connection with: ", id)
+				LogError(fmt.Sprintf("Failed to estabilish connection with: ", id))
 				// TODO what to do here? If it actually failed it should be detected by some other node.
 			}
 
@@ -125,12 +122,10 @@ func IntroduceNodeToGroup(request string, addr *net.UDPAddr) (Message, error) {
 	// TODO Add corner case checking, what if the introducer gets a looped around message from
 	// the past? It should check that the node doesn't already exist.
 
-	fmt.Println("Join message body: ", request)
-
 	ipAddr := addr.IP.String()
 	nodeId := ConstructNodeID(ipAddr)
 
-	fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
+	// fmt.Printf("IP: %s NodeID: %s", ipAddr, nodeId)
 
 	AddNewMemberToMembershipInfo(nodeId)
 

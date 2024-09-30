@@ -82,3 +82,7 @@ func PrintMessage(direction string, message Message, nodeId string) {
 func LogMessage(message string) {
 	fmt.Fprintf(log_file_writer, "[%s] %s\n", time.Now().Format(time.TimeOnly), message)
 }
+
+func LogError(message string) {
+	fmt.Fprintf(log_file_writer, "[%s] ERROR: %s\n", time.Now().Format(time.TimeOnly), message)
+}

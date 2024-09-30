@@ -41,8 +41,6 @@ func startServer(clientServerChan chan int) {
 
 		var messagesToPiggyback = GetUnexpiredPiggybackMessages()
 
-		// fmt.Println("Server has messages: ", len(messagesToPiggyback))
-
 		switch message.Kind {
 		case PING:
 			PrintMessage("Incoming", message, address.IP.String())
@@ -50,7 +48,7 @@ func startServer(clientServerChan chan int) {
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
 			if err != nil {
-				fmt.Println("Failed to unmarshal PING messages, skipping")
+				LogError("Failed to unmarshal PING messages, skipping")
 				continue
 			}
 
@@ -96,14 +94,14 @@ func startServer(clientServerChan chan int) {
 
 		ackResponse, err := EncodeAckMessage(messagesToPiggyback)
 		if err != nil {
-			fmt.Println("Failed to generate response.")
+			LogError("Failed to generate response.")
 			continue
 		}
 
 		var ackMessage Message
 		err = json.Unmarshal(ackResponse, &ackMessage)
 		if err != nil {
-			fmt.Println("Unable to decode outgoing ACK message")
+			LogError("Unable to decode outgoing ACK message")
 			continue
 		}
 		PrintMessage("outgoing", message, "")
@@ -132,12 +130,12 @@ func ProcessHelloMessage(message Message) error {
 	_, ok := GetMemberInfo(nodeId)
 
 	if ok {
-		fmt.Printf("Node %s already exists in membership info, Skipping HELLO \n", nodeId)
+		LogMessage(fmt.Sprintf("Node %s already exists in membership info, Skipping HELLO \n", nodeId))
 		return nil
 	}
 
 	if nodeId == NODE_ID {
-		fmt.Printf("Received self hello message for ID: %s Skip \n", nodeId)
+		LogMessage(fmt.Sprintf("Received self hello message for ID: %s Skip \n", nodeId))
 		return nil
 	}
 
@@ -166,8 +164,6 @@ func ProcessFailOrLeaveMessage(message Message) error {
 	_, ok := GetMemberInfo(nodeId)
 
 	if ok { // node exists in membership info, remove and disseminate
-		fmt.Printf("Node %s exists in membership info, removing in FAIL/LEAVE \n", nodeId)
-
 		DeleteMember(nodeId)
 
 		// disseminating info that the node left
@@ -183,7 +179,7 @@ func ProcessSuspectMessage(message Message) error {
 	PrintMessage("incoming", message, "")
 
 	if !inSuspectMode {
-		fmt.Printf("Received a SUSPECT message when not in suspect mode")
+		LogError("Received a SUSPECT message when not in suspect mode")
 		return fmt.Errorf("SUSPECT message but not in suspect mode")
 	}
 
@@ -191,7 +187,7 @@ func ProcessSuspectMessage(message Message) error {
 	parts := strings.Split(message.Data, "@")
 	message_incarnation, err := strconv.Atoi(parts[0])
 	if err != nil {
-		fmt.Printf("Unable to get incarnation number from a SUSPECT message", message_incarnation)
+		LogError(fmt.Sprintf("Unable to get incarnation number from a SUSPECT message", message_incarnation))
 		return nil
 	}
 	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
@@ -200,7 +196,7 @@ func ProcessSuspectMessage(message Message) error {
 
 		// If the self SUSPECT message is for an old self, ignore since the node already disseminated ALIVE
 		if message_incarnation < INCARNATION {
-			fmt.Printf("Received a SUSPECT message for an old self")
+			LogMessage("Received a SUSPECT message for an old self \n")
 			return nil
 		}
 
@@ -214,7 +210,7 @@ func ProcessSuspectMessage(message Message) error {
 
 		_, ok := GetMemberInfo(nodeId)
 		if !ok {
-			fmt.Printf("Got a SUSPECT message for a removed node \n")
+			LogMessage("Got a SUSPECT message for a removed node \n")
 			return nil
 		}
 
@@ -251,7 +247,7 @@ func ProcessAliveMessage(message Message) error {
 	PrintMessage("incoming", message, "")
 
 	if !inSuspectMode {
-		fmt.Printf("Received an ALIVE message when not in suspect mode")
+		LogError("Received an ALIVE message when not in suspect mode")
 		return fmt.Errorf("ALIVE message but not in suspect mode")
 	}
 
@@ -259,7 +255,7 @@ func ProcessAliveMessage(message Message) error {
 	parts := strings.Split(message.Data, "@")
 	message_incarnation, err := strconv.Atoi(parts[0])
 	if err != nil {
-		fmt.Printf("Unable to get incarnation number from a SUSPECT message")
+		LogError("Unable to get incarnation number from a SUSPECT message")
 		return nil
 	}
 	nodeId := fmt.Sprintf("%s@%s", parts[1], parts[2])
@@ -291,7 +287,7 @@ func ProcessSuspectModeMessage(message Message) error {
 
 	suspect_mode, err := strconv.ParseBool(message.Data)
 	if err != nil {
-		fmt.Printf("Was not able to parse SUSPECT_MODE message")
+		LogError("Was not able to parse SUSPECT_MODE message")
 		return fmt.Errorf("Was not able to parse SUSPECT_MODE message")
 	}
 
@@ -310,7 +306,7 @@ func ProcessDropoutMessage(message Message) error {
 
 	dropoutRate, err := strconv.ParseFloat(strings.TrimSpace(dropoutRateValue), 64)
 	if err != nil {
-		fmt.Printf("Was not able to parse DROPOUT message")
+		LogError("Was not able to parse DROPOUT message")
 		return fmt.Errorf("Was not able to parse DROPOUT message")
 	}
 	dropRate = dropoutRate

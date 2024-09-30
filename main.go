@@ -78,8 +78,10 @@ func main() {
 		}
 
 		switch {
-		case strings.Contains(demoInstruction, "allmems"):
+		case strings.Contains(demoInstruction, "list_mem"):
 			PrintMembershipInfo()
+		case strings.Contains(demoInstruction, "list_self"):
+			fmt.Printf("ID: %s\n", NODE_ID)
 		case strings.Contains(demoInstruction, "piggybacks"):
 			PrintPiggybackMessages()
 		case strings.Contains(demoInstruction, "leave"):
@@ -87,12 +89,15 @@ func main() {
 		case strings.Contains(demoInstruction, "status"):
 			fmt.Printf("ID: %s\n", NODE_ID)
 			fmt.Printf("Incarnation: %d\n", INCARNATION)
-			fmt.Printf("InSuspectMode: %t\n", inSuspectMode)
 			fmt.Printf("Dropout: %f\n", dropRate)
-		case strings.Contains(demoInstruction, "startsus"):
+		case strings.Contains(demoInstruction, "enable_sus"):
 			StartSuspecting()
-		case strings.Contains(demoInstruction, "stopsus"):
+		case strings.Contains(demoInstruction, "disable_sus"):
 			StopSuspecting()
+		case strings.Contains(demoInstruction, "status_sus"):
+			fmt.Printf("In Suspect Mode: %t\n", inSuspectMode)
+		case strings.Contains(demoInstruction, "list_suspects"):
+			PrintSuspectedNodes()
 		case strings.Contains(demoInstruction, "dropout"):
 			SetDropout(demoInstruction)
 		}

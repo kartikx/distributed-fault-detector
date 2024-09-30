@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -16,11 +17,13 @@ func AddNewMemberToMembershipInfo(nodeId string) error {
 	ipAddr := GetIPFromID(nodeId)
 
 	if nodeId == NODE_ID || ipAddr == LOCAL_IP {
-		fmt.Printf("Unexpected, attempt to add self. Don't do anything. %s %s %s %s\n", nodeId, NODE_ID, ipAddr, LOCAL_IP)
+		LogError(fmt.Sprintf("Unexpected, attempt to add self. Don't do anything. %s %s %s %s\n",
+			nodeId, NODE_ID, ipAddr, LOCAL_IP))
 		return nil
 	}
 
-	fmt.Printf("Adding new member to info %s %s %s %s\n", nodeId, NODE_ID, ipAddr, LOCAL_IP)
+	LogMessage(fmt.Sprintf("Adding new member to info %s %s %s %s\n",
+		nodeId, NODE_ID, ipAddr, LOCAL_IP))
 
 	conn, err := net.Dial("udp", GetServerEndpoint(ipAddr))
 	if err != nil {
@@ -60,10 +63,8 @@ func PrintMembershipInfo() {
 	membershipInfoMutex.RLock()
 	defer membershipInfoMutex.RUnlock()
 
-	fmt.Println("Membership Table length: ", len(membershipInfo))
-
 	for k := range membershipInfo {
-		fmt.Printf("NODE ID: %s\n", k)
+		fmt.Printf("NODE ID: %s", k)
 	}
 }
 
@@ -134,5 +135,31 @@ func MarkMemberSuspected(nodeId string) {
 	member.suspected = true
 	membershipInfo[nodeId] = member
 
+	fmt.Println("Suspected node: ", nodeId)
+
 	LogMessage(fmt.Sprintf("SUSPECT NODE: %s", nodeId))
+}
+
+func PrintSuspectedNodes() {
+	if !inSuspectMode {
+		fmt.Println("Suspicion is not enabled.")
+		return
+	}
+
+	membershipInfoMutex.RLock()
+	defer membershipInfoMutex.RUnlock()
+
+	var suspects []string
+
+	for k, v := range membershipInfo {
+		if v.suspected {
+			suspects = append(suspects, k)
+		}
+	}
+
+	if len(suspects) > 0 {
+		fmt.Printf("Suspected Nodes: [%s]", strings.Join(suspects, ","))
+	} else {
+		fmt.Printf("No nodes being suspected.")
+	}
 }

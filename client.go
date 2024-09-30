@@ -41,7 +41,8 @@ func handleEachMember(nodeId string) {
 	}
 
 	if connection == nil {
-		fmt.Printf("Node %s connection is nil, it might have been removed from the group\n", nodeId)
+		LogError(fmt.Sprintf("Node %s connection is nil, it might have been removed from the group\n",
+			nodeId))
 		DeleteMember(nodeId)
 		return
 	}
@@ -50,14 +51,14 @@ func handleEachMember(nodeId string) {
 
 	pingMessageEnc, err := EncodePingMessage(messagesToPiggyback)
 	if err != nil {
-		fmt.Println("Unable to encode ping message")
+		LogError("Unable to encode ping message")
 		return
 	}
 
 	var pingMessage Message
 	err = json.Unmarshal(pingMessageEnc, &pingMessage)
 	if err != nil {
-		fmt.Println("Unable to decode outgoing PING message")
+		LogError("Unable to decode outgoing PING message")
 		return
 	}
 	PrintMessage("outgoing", pingMessage, nodeId)
@@ -84,7 +85,7 @@ func handleEachMember(nodeId string) {
 
 			return
 		} else { // Otherwise, just mark the node as failed
-			fmt.Printf("Error in reading from connection for nodeId [%s] Err: [%s]\n", nodeId, err)
+			LogError(fmt.Sprintf("Error in reading from connection for nodeId [%s] Err: [%s]\n", nodeId, err))
 
 			LogMessage(fmt.Sprintf("DETECTED NODE %s as FAILED", nodeId))
 			DeleteMember(nodeId)
@@ -100,12 +101,10 @@ func handleEachMember(nodeId string) {
 			return
 		}
 	}
-	// TODO simulate drops on receiver end.
 
 	messages, err := DecodeAckMessage(buffer[:mLen])
-	// fmt.Println("Messages in ACK: ", len(messages))
 	if err != nil {
-		fmt.Printf("Unable to decode ACK message from node: %s", nodeId)
+		LogError(fmt.Sprintf("Unable to decode ACK message from node: %s", nodeId))
 		return
 	}
 
@@ -154,9 +153,8 @@ func ExitGroup() {
 
 	// Leave message just contains the NODE_ID
 	leaveMessageEnc, err := GetEncodedLeaveMessage(NODE_ID)
-
 	if err != nil {
-		fmt.Println("Unable to encode leave message")
+		LogError("Unable to encode leave message")
 		return
 	}
 
@@ -164,8 +162,6 @@ func ExitGroup() {
 	for nodeId := range members {
 		connection := GetNodeConnection(nodeId)
 		if connection != nil {
-			fmt.Printf("Exiting gracefully %s sent to %s\n", NODE_ID, nodeId)
-
 			var leaveMessage Message
 			err = json.Unmarshal(leaveMessageEnc, &leaveMessage)
 			if err != nil {
