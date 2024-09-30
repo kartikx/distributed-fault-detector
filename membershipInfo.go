@@ -57,13 +57,13 @@ func GetMembers() map[string]MemberInfo {
 }
 
 func PrintMembershipInfo() {
-	fmt.Println("====Membership Info===")
-
 	membershipInfoMutex.RLock()
 	defer membershipInfoMutex.RUnlock()
 
-	for k, v := range membershipInfo {
-		fmt.Println(k, v)
+	fmt.Println("Membership Table length: ", len(membershipInfo))
+
+	for k := range membershipInfo {
+		fmt.Printf("NODE ID: %s", k)
 	}
 }
 
