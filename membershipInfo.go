@@ -158,8 +158,8 @@ func PrintSuspectedNodes() {
 	}
 
 	if len(suspects) > 0 {
-		fmt.Printf("Suspected Nodes: [%s]", strings.Join(suspects, ","))
+		fmt.Printf("Suspected Nodes: [%s]\n", strings.Join(suspects, ","))
 	} else {
-		fmt.Printf("No nodes being suspected.")
+		fmt.Printf("No nodes being suspected.\n")
 	}
 }
