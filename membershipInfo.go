@@ -64,7 +64,7 @@ func PrintMembershipInfo() {
 	defer membershipInfoMutex.RUnlock()
 
 	for k := range membershipInfo {
-		fmt.Printf("NODE ID: %s", k)
+		fmt.Printf("NODE ID: %s\n", k)
 	}
 }
 
