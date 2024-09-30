@@ -214,7 +214,7 @@ func ProcessSuspectMessage(message Message) error {
 
 		_, ok := GetMemberInfo(nodeId)
 		if !ok {
-			fmt.Printf("Got a SUSPECT message for a removed node")
+			fmt.Printf("Got a SUSPECT message for a removed node \n")
 			return nil
 		}
 
