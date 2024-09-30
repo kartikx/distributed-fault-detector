@@ -63,7 +63,7 @@ func PrintMembershipInfo() {
 	fmt.Println("Membership Table length: ", len(membershipInfo))
 
 	for k := range membershipInfo {
-		fmt.Printf("NODE ID: %s", k)
+		fmt.Printf("NODE ID: %s\n", k)
 	}
 }
 

@@ -45,7 +45,7 @@ func startServer(clientServerChan chan int) {
 
 		switch message.Kind {
 		case PING:
-			PrintMessage("Incoming", message, string(address.IP))
+			PrintMessage("Incoming", message, address.IP.String())
 			var messages Messages
 			err = json.Unmarshal([]byte(message.Data), &messages)
 
