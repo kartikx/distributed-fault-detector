@@ -7,5 +7,5 @@ const (
 	PIGGYBACK_TTL                  = 4
 	TIMEOUT_DETECTION_MILLISECONDS = 1000
 	PING_INTERVAL_MILLISECONDS     = 1500
-	SUSPECT_TIMEOUT                = 5
+	SUSPECT_TIMEOUT                = 10
 )
