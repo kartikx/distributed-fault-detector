@@ -135,7 +135,7 @@ func MarkMemberSuspected(nodeId string) {
 	member.suspected = true
 	membershipInfo[nodeId] = member
 
-	fmt.Println("Suspected node: ", nodeId)
+	fmt.Println("Suspected node:", nodeId)
 
 	LogMessage(fmt.Sprintf("SUSPECT NODE: %s", nodeId))
 }

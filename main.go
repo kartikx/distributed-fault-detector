@@ -59,6 +59,8 @@ func main() {
 	// Dial connection.
 	go startClient(clientServerChan)
 
+	fmt.Println("Joined the group as: ", NODE_ID)
+
 	os_signals := make(chan os.Signal, 1)
 	signal.Notify(os_signals, os.Interrupt)
 	go func() {
@@ -86,7 +88,9 @@ func main() {
 			PrintPiggybackMessages()
 		case strings.Contains(demoInstruction, "leave"):
 			ExitGroup()
-		case strings.Contains(demoInstruction, "status"):
+		case strings.Contains(demoInstruction, "status_sus"):
+			fmt.Printf("In Suspect Mode: %t\n", inSuspectMode)
+		case strings.Contains(demoInstruction, "meta_info"):
 			fmt.Printf("ID: %s\n", NODE_ID)
 			fmt.Printf("Incarnation: %d\n", INCARNATION)
 			fmt.Printf("Dropout: %f\n", dropRate)
@@ -94,8 +98,6 @@ func main() {
 			StartSuspecting()
 		case strings.Contains(demoInstruction, "disable_sus"):
 			StopSuspecting()
-		case strings.Contains(demoInstruction, "status_sus"):
-			fmt.Printf("In Suspect Mode: %t\n", inSuspectMode)
 		case strings.Contains(demoInstruction, "list_suspects"):
 			PrintSuspectedNodes()
 		case strings.Contains(demoInstruction, "dropout"):

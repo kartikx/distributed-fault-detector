@@ -181,12 +181,14 @@ func ExitGroup() {
 }
 
 func StartSuspecting() {
+	fmt.Println("Enabling Suspicion")
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "true"}
 	ProcessSuspectModeMessage(suspectMessage)
 	AddPiggybackMessage(suspectMessage)
 }
 
 func StopSuspecting() {
+	fmt.Println("Disabling Suspicion")
 	suspectMessage := Message{Kind: SUSPECT_MODE, Data: "false"}
 	ProcessSuspectModeMessage(suspectMessage)
 	AddPiggybackMessage(suspectMessage)
